@@ -94,4 +94,4 @@ Pull requests welcome. Please keep the single-file architecture — no build too
 
 ## License
 
-MIT
+MIT © [studer.rocks](https://studer.rocks)
