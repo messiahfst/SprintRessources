@@ -302,45 +302,45 @@ const i18n = {
     "toast-copied":"Copied!","placeholder-name":"e.g. Alice","holiday-placeholder":"e.g. Easter Monday",
     "alert-no-members":"Please add at least one team member.",
     "lbl-disciplines":"Disciplines","disc-placeholder":"e.g. Backend","disc-add":"Add",
-    "disc-warn":"Sum &#8800; 100% (currently {0}%)","t-disc-title":"Capacity by Discipline"
+    "disc-warn":"Sum ≠ 100% (currently {0}%)","t-disc-title":"Capacity by Discipline"
   },
   de: {
-    "t-title":"Sprint Ressourcen-Planer","t-subtitle":"Teamkapazitat fur das Sprint Planning 1 planen",
+    "t-title":"Sprint Ressourcen-Planer","t-subtitle":"Teamkapazität für das Sprint Planning planen",
     "t-lang-label":"Sprache:","t-settings":"Sprint-Einstellungen","t-sprint-name":"Sprint-Name",
     "t-sprint-weeks":"Dauer (Wochen)","t-workdays-week":"Arbeitstage / Woche",
     "t-sprint-days-calc":"Sprint-Tage (ber.)","t-hours-day":"Stunden / Tag",
-    "t-focus-mode-label":"Fokus-Faktor Modus","t-focus-global-opt":"Global (fur alle)",
+    "t-focus-mode-label":"Fokus-Faktor Modus","t-focus-global-opt":"Global (für alle)",
     "t-focus-individual-opt":"Individuell (pro Person)","t-focus-factor":"Fokus-Faktor (%)",
-    "t-holidays":"Feiertage im Sprint","t-add-holiday":"+ Feiertag hinzufugen",
+    "t-holidays":"Feiertage im Sprint","t-add-holiday":"+ Feiertag hinzufügen",
     "t-holiday-name-lbl":"Name","t-holiday-days-lbl":"Tage",
     "t-confirm-holiday":"Hinzufugen","t-cancel":"Abbrechen",
     "t-holiday-hint":"Feiertage werden anteilig abgezogen (skaliert nach Anstellungsgrad & Projektzuteilung).",
     "t-team":"Teammitglieder","t-add-member":"+ Mitglied hinzufugen",
     "t-member-hint":"Anstellungsgrad %: Pensum (80% = 4T/Woche). Projektzuteilung %: Anteil ihrer Zeit in diesem Sprint.",
-    "t-calculate":"Kapazitat berechnen","t-results":"Ergebnisse",
+    "t-calculate":"Kapazität berechnen","t-results":"Ergebnisse",
     "t-copy-md":"Als Markdown kopieren","t-copy-text":"Als Text kopieren",
     "t-col-name":"Name","t-col-employ":"Pensum(%)","t-col-alloc":"Zuteilung(%)",
-    "t-col-absence":"Abwesenheit(T)","t-col-holidays":"Feiertage(T)","t-col-available":"Verfugbar(T)",
+    "t-col-absence":"Abwesenheit(T)","t-col-holidays":"Feiertage(T)","t-col-available":"Verfügbar(T)",
     "t-col-focus":"Fokus(%)","t-col-cap-days":"Kap.(T)","t-col-cap-hours":"Kap.(h)",
     "t-col-scope-days":"Story(T)","t-col-scope-hours":"Story(h)",
     "t-sprint-scope":"User-Story-Budget (%)",
-    "t-sprint-scope-hint":"% der Kapazitat fur geplante Tickets. Rest = Puffer fur spontane / Fastlane-Aufgaben.",
+    "t-sprint-scope-hint":"% der Kapazität für geplante Tickets. Rest = Puffer für spontane / Fastlane-Aufgaben.",
     "t-split-title":"Sprint-Budget Aufteilung",
     "t-us-label":"User Stories / Geplant","t-buffer-label":"Fastlane / Puffer",
     "summary-us-days":"User Stories","summary-buffer-days":"Puffer",
     "t-github-link":"GitHub","t-click-copy-hint":"Auf einen Wert klicken, um ihn zu kopieren.",
     "lbl-name":"Name","lbl-employment":"Anstellungsgrad (%)","lbl-allocation":"Projektzuteilung (%)",
     "lbl-absence":"Abwesenheit (Tage)","lbl-focus-ind":"Fokus (%)","lbl-remove":"Entfernen",
-    "unnamed":"Unbenannt","no-members":"Noch keine Teammitglieder. Klicke auf Mitglied hinzufugen.",
+    "unnamed":"Unbenannt","no-members":"Noch keine Teammitglieder. Klicke auf Mitglied hinzufügen.",
     "no-holidays":"Noch keine Feiertage eingetragen.","total":"Gesamt",
-    "summary-sprint-days":"Sprint-Tage","summary-total-cap-days":"Gesamtkapazitat",
-    "summary-total-cap-hours":"Gesamtstunden","summary-team-size":"Teamgroe",
+    "summary-sprint-days":"Sprint-Tage","summary-total-cap-days":"Gesamtkapazität",
+    "summary-total-cap-hours":"Gesamtstunden","summary-team-size":"Teamgröße",
     "summary-unit-days":"Tage","summary-unit-hours":"Std","summary-unit-devs":"Devs",
-    "formula-hint":"Verfugbar(T) = (Sprint-Tage - Feiertage - Abwesenheit) x Pensum% x Zuteilung%  |  Kapazitat = Verfugbar x Fokus%",
+    "formula-hint":"Verfügbar(T) = (Sprint-Tage - Feiertage - Abwesenheit) x Pensum% x Zuteilung%  |  Kapazität = Verfügbar x Fokus%",
     "toast-copied":"Kopiert!","placeholder-name":"z.B. Alice","holiday-placeholder":"z.B. Ostermontag",
     "alert-no-members":"Bitte mindestens ein Teammitglied hinzufugen.",
     "lbl-disciplines":"Disziplinen","disc-placeholder":"z.B. Backend","disc-add":"Hinzuf.",
-    "disc-warn":"Summe &#8800; 100% (aktuell {0}%)","t-disc-title":"Kapazit&auml;t nach Disziplin"
+    "disc-warn":"Summe ≠ 100% (aktuell {0}%)","t-disc-title":"Kapazität nach Disziplin"
   }
 };
 let lang = localStorage.getItem('srp-lang') || 'en';
@@ -549,7 +549,7 @@ function copySingle(v){ copyToClipboard(String(v)); }
 function buildMarkdown(){
   const r=window._lastResult; if(!r) return '';
   const cols=[t('t-col-name'),t('t-col-employ'),t('t-col-alloc'),t('t-col-absence'),t('t-col-holidays'),t('t-col-available'),t('t-col-focus'),t('t-col-cap-days'),t('t-col-cap-hours')];
-  let md='## '+(lang==='de'?'Sprint Kapazitaten':'Sprint Capacity')+': '+r.sprintName+'\n\n';
+  let md='## '+(lang==='de'?'Sprint Kapazitäten':'Sprint Capacity')+': '+r.sprintName+'\n\n';
   md+='| '+cols.join(' | ')+' |\n';
   md+='|'+cols.map(()=>'---').join('|')+'|\n';
   r.rows.forEach(row=>{ md+='| '+row.name+' | '+row.employment+' | '+row.allocation+' | '+row.absence+' | '+row.holidays+' | '+row.available+' | '+row.focus+'% | '+row.capDays+' | '+row.capHours+' | **'+row.scopeDays+'** | **'+row.scopeHours+'** |\n'; });
@@ -561,7 +561,7 @@ function buildMarkdown(){
   md+='| '+(lang==='de'?'Fastlane / Puffer':'Fastlane / Buffer')+' | '+r.bufferDays+' | '+r.bufferHours+' |\n';
   md+='\n> '+(lang==='de'?'User-Story-Budget':'User Story Budget')+': '+r.scopePct+'%';
   if(r.discEntries&&r.discEntries.length){
-    md+='\n\n### '+(lang==='de'?'Kapazit\u00e4t nach Disziplin':'Capacity by Discipline')+'\n';
+    md+='\n\n### '+(lang==='de'?'Kapazität nach Disziplin':'Capacity by Discipline')+'\n';
     md+='| '+(lang==='de'?'Disziplin':'Discipline')+' | '+(lang==='de'?'Tage':'Days')+' | '+(lang==='de'?'Stunden':'Hours')+'|\n|---|---|---|\n';
     r.discEntries.forEach(([name,d])=>{ md+='| '+name+' | '+d.days+' | '+d.hours+' |\n'; });
   }
@@ -570,7 +570,7 @@ function buildMarkdown(){
 function buildPlainText(){
   const r=window._lastResult; if(!r) return '';
   const p=(s,n)=>String(s).padEnd(n), rp=(s,n)=>String(s).padStart(n), ln='-'.repeat(80);
-  let txt=(lang==='de'?'Sprint Kapazitaten':'Sprint Capacity')+': '+r.sprintName+'\n'+ln+'\n';
+  let txt=(lang==='de'?'Sprint Kapazitäten':'Sprint Capacity')+': '+r.sprintName+'\n'+ln+'\n';
   txt+=p('Name',16)+rp('Empl',7)+rp('Alloc',7)+rp('Abs',6)+rp('Hols',6)+rp('Avail',8)+rp('Focus',7)+rp('Cap.d',8)+rp('Cap.h',8)+rp('Story.d',9)+rp('Story.h',9)+'\n'+ln+'\n';
   r.rows.forEach(row=>{ txt+=p(row.name,16)+rp(row.employment+'%',7)+rp(row.allocation+'%',7)+rp(row.absence,6)+rp(row.holidays,6)+rp(row.available,8)+rp(row.focus+'%',7)+rp(row.capDays,8)+rp(row.capHours,8)+rp(row.scopeDays,9)+rp(row.scopeHours,9)+'\n'; });
   txt+=ln+'\n'+p(t('total'),44)+rp(r.totalDays,8)+rp(r.totalHours,8)+rp(r.usDays,9)+rp(r.usHours,9)+'\n\n';
@@ -578,7 +578,7 @@ function buildPlainText(){
   txt+=p((lang==='de'?'Fastlane / Puffer':'Fastlane / Buffer'),44)+rp(r.bufferDays,8)+rp(r.bufferHours,8)+'\n';
   txt+='('+t('t-sprint-scope')+': '+r.scopePct+'%)\n';
   if(r.discEntries&&r.discEntries.length){
-    txt+='\n'+(lang==='de'?'Kapazit\u00e4t nach Disziplin':'Capacity by Discipline')+'\n'+ln+'\n';
+    txt+='\n'+(lang==='de'?'Kapazität nach Disziplin':'Capacity by Discipline')+'\n'+ln+'\n';
     txt+=p((lang==='de'?'Disziplin':'Discipline'),30)+rp((lang==='de'?'Tage':'Days'),8)+rp((lang==='de'?'Stunden':'Hours'),8)+'\n'+ln+'\n';
     r.discEntries.forEach(([name,d])=>{ txt+=p(name,30)+rp(d.days+'d',8)+rp(d.hours+'h',8)+'\n'; });
   }
