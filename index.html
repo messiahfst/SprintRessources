@@ -71,8 +71,16 @@
     .sec-title { color: var(--text-1); font-weight: 600; }
     .lbl { font-size: .75rem; color: var(--text-3); display: block; margin-bottom: .25rem; }
     .member-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; background: var(--bg-member); border-radius: .75rem; padding: .75rem; border: 1px solid var(--border); }
+    .disc-chip { display:inline-flex;align-items:center;gap:.3rem;border-radius:9999px;font-size:.72rem;font-weight:600;padding:.22rem .55rem .22rem .7rem;white-space:nowrap;border-width:1px;border-style:solid; }
+    .disc-chip-x { display:inline-flex;align-items:center;justify-content:center;width:1rem;height:1rem;border-radius:9999px;border:none;cursor:pointer;font-size:.65rem;line-height:1;font-weight:700;transition:background .12s;flex-shrink:0; }
+    .disc-chip-x:hover { opacity:.7; }
     .fade-in { animation: fadeIn .25s ease; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; } }
+    .lang-menu { position:absolute;top:calc(100% + .35rem);right:0;min-width:7rem;background:var(--bg-card);border:1px solid var(--border);border-radius:.6rem;box-shadow:0 8px 24px var(--shadow);z-index:200;overflow:hidden;display:none; }
+    .lang-menu.open { display:block; }
+    .lang-opt { display:flex;align-items:center;gap:.5rem;padding:.5rem .85rem;font-size:.85rem;cursor:pointer;color:var(--text-2);white-space:nowrap; }
+    .lang-opt:hover { background:var(--accent-lt);color:var(--accent); }
+    .lang-opt.active { font-weight:700;color:var(--accent); }
     table { border-collapse: collapse; }
     th, td { border-bottom: 1px solid var(--border); }
     thead tr th { background: var(--bg-thead); color: var(--text-head); border-bottom: 2px solid var(--border); }
@@ -89,11 +97,13 @@
       <p class="lbl" style="margin-top:.25rem;" id="t-subtitle">Plan your team capacity for Sprint Planning 1</p>
     </div>
     <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-      <span class="lbl" style="margin:0;" id="t-lang-label">Language:</span>
-      <select id="lang-select" style="width:auto;" onchange="setLang(this.value)">
-        <option value="en">English</option>
-        <option value="de">Deutsch</option>
-      </select>
+      <div style="position:relative;" id="lang-picker">
+        <button class="theme-toggle" onclick="toggleLangMenu(event)" title="Language" id="lang-btn" style="font-size:1.1rem;letter-spacing:0;">🌐</button>
+        <div class="lang-menu" id="lang-menu">
+          <div class="lang-opt" onclick="setLang('en');closeLangMenu()" id="lang-opt-en">🇬🇧&nbsp;English</div>
+          <div class="lang-opt" onclick="setLang('de');closeLangMenu()" id="lang-opt-de">🇩🇪&nbsp;Deutsch</div>
+        </div>
+      </div>
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
         <svg id="icon-sun" style="display:none;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg id="icon-moon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
@@ -193,6 +203,8 @@
             <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-focus">Focus(%)</th>
             <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-cap-days">Cap.(d)</th>
             <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-cap-hours">Cap.(h)</th>
+            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;background:rgba(34,197,94,.08);" id="t-col-scope-days">Story(d)</th>
+            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;background:rgba(34,197,94,.08);" id="t-col-scope-hours">Story(h)</th>
           </tr>
         </thead>
         <tbody id="results-body"></tbody>
@@ -268,6 +280,7 @@ const i18n = {
     "t-col-name":"Name","t-col-employ":"Empl.(%)","t-col-alloc":"Alloc.(%)",
     "t-col-absence":"Absence(d)","t-col-holidays":"Holidays(d)","t-col-available":"Avail.(d)",
     "t-col-focus":"Focus(%)","t-col-cap-days":"Cap.(d)","t-col-cap-hours":"Cap.(h)",
+    "t-col-scope-days":"Story(d)","t-col-scope-hours":"Story(h)",
     "t-sprint-scope":"User Story Budget (%)",
     "t-sprint-scope-hint":"% of capacity reserved for planned tickets. Remainder = buffer for spontaneous / fastlane work.",
     "t-split-title":"Sprint Budget Split",
@@ -305,6 +318,7 @@ const i18n = {
     "t-col-name":"Name","t-col-employ":"Pensum(%)","t-col-alloc":"Zuteilung(%)",
     "t-col-absence":"Abwesenheit(T)","t-col-holidays":"Feiertage(T)","t-col-available":"Verfugbar(T)",
     "t-col-focus":"Fokus(%)","t-col-cap-days":"Kap.(T)","t-col-cap-hours":"Kap.(h)",
+    "t-col-scope-days":"Story(T)","t-col-scope-hours":"Story(h)",
     "t-sprint-scope":"User-Story-Budget (%)",
     "t-sprint-scope-hint":"% der Kapazitat fur geplante Tickets. Rest = Puffer fur spontane / Fastlane-Aufgaben.",
     "t-split-title":"Sprint-Budget Aufteilung",
@@ -330,11 +344,17 @@ let members = [], holidays = [];
 function t(k){ return (i18n[lang]&&i18n[lang][k])||i18n.en[k]||k; }
 function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); }
 function applyLang(){
-  document.getElementById('lang-select').value=lang;
   document.documentElement.lang=lang;
   Object.keys(i18n.en).forEach(k=>{ const el=document.getElementById(k); if(el) el.textContent=t(k); });
   const hn=document.getElementById('holiday-name-input'); if(hn) hn.placeholder=t('holiday-placeholder');
+  const flags={en:'🇬🇧',de:'🇩🇪'};
+  document.getElementById('lang-btn').textContent=flags[lang]||'🌐';
+  document.querySelectorAll('.lang-opt').forEach(el=>el.classList.remove('active'));
+  const ao=document.getElementById('lang-opt-'+lang); if(ao) ao.classList.add('active');
 }
+function toggleLangMenu(e){ e.stopPropagation(); document.getElementById('lang-menu').classList.toggle('open'); }
+function closeLangMenu(){ document.getElementById('lang-menu').classList.remove('open'); }
+document.addEventListener('click',()=>closeLangMenu());
 function toggleTheme(){
   const html=document.documentElement;
   const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
@@ -388,9 +408,14 @@ function renderTeam(){
       <div style="padding-top:1.25rem;"><button class="btn-danger" onclick="removeMember(${i})">${t('lbl-remove')}</button></div>
       <div style="width:100%;border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.1rem;display:flex;flex-wrap:wrap;align-items:flex-end;gap:.4rem;">
         <span class="lbl" style="margin:0;font-weight:500;width:100%;">${t('lbl-disciplines')}</span>
-        ${(m.disciplines||[]).map((d,di)=>`<span class="disc-chip" style="background:${discColor(d.name)};color:#fff;">${escHtml(d.name)}&nbsp;${d.pct}%&nbsp;<button onclick="removeDiscipline(${i},${di})" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.8);font-weight:700;line-height:1;font-size:.85rem;padding:0;">&times;</button></span>`).join('')}
-        <input type="text" id="disc-name-${i}" list="disc-suggestions" placeholder="${t('disc-placeholder')}" style="width:105px;flex-shrink:0;" />
-        <input type="number" id="disc-pct-${i}" min="1" max="100" step="5" value="50" style="width:58px;flex-shrink:0;" />
+        ${(m.disciplines||[]).map((d,di)=>{
+          const bg=discColor(d.name);
+          const r=parseInt(bg.slice(1,3),16),g=parseInt(bg.slice(3,5),16),b=parseInt(bg.slice(5,7),16);
+          const light=`rgba(${r},${g},${b},.13)`,border=`rgba(${r},${g},${b},.35)`,xbg=`rgba(${r},${g},${b},.22)`;
+          return `<span class="disc-chip" style="background:${light};color:${bg};border-color:${border};">${escHtml(d.name)}&ensp;<span style="font-variant-numeric:tabular-nums;opacity:.8;">${d.pct}%</span><button class="disc-chip-x" onclick="removeDiscipline(${i},${di})" style="background:${xbg};color:${bg};margin-left:.1rem;" title="Remove">&times;</button></span>`;
+        }).join('')}
+        <input type="text" id="disc-name-${i}" list="disc-suggestions" placeholder="${t('disc-placeholder')}" style="width:220px;flex-shrink:0;" />
+        <input type="number" id="disc-pct-${i}" min="1" max="100" step="5" value="100" style="width:72px;flex-shrink:0;" />
         <button class="btn-outline" style="font-size:.7rem;padding:.2rem .5rem;flex-shrink:0;" onclick="addDiscipline(${i})">+ ${t('disc-add')}</button>
         ${discWarn?`<span style="font-size:.7rem;color:#ef4444;">${t('disc-warn').replace('{0}',discTotal)}</span>`:''}
       </div>
@@ -431,7 +456,9 @@ function calculate(){
     const available=Math.round(availRaw*factor*100)/100;
     const capDays=Math.round(available*focus*100)/100;
     const capHours=Math.round(capDays*hoursPerDay*100)/100;
-    return {name:m.name||t('unnamed'),employment:Math.round(empl*100),allocation:Math.round(alloc*100),absence:m.absence,holidays:totalHolidays,available,focus:Math.round(focus*100),capDays,capHours};
+    const scopeDays=Math.round(capDays*sprintScope*100)/100;
+    const scopeHours=Math.round(capHours*sprintScope*100)/100;
+    return {name:m.name||t('unnamed'),employment:Math.round(empl*100),allocation:Math.round(alloc*100),absence:m.absence,holidays:totalHolidays,available,focus:Math.round(focus*100),capDays,capHours,scopeDays,scopeHours};
   });
   const totalDays=Math.round(rows.reduce((s,r)=>s+r.capDays,0)*100)/100;
   const totalHours=Math.round(rows.reduce((s,r)=>s+r.capHours,0)*100)/100;
@@ -473,6 +500,8 @@ function calculate(){
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--text-3);" onclick="copySingle('${r.focus}')">${r.focus}%</td>
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#16a34a;font-weight:600;" onclick="copySingle('${r.capDays}')">${r.capDays}</td>
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#1d4ed8;font-weight:600;" onclick="copySingle('${r.capHours}')">${r.capHours}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#15803d;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${r.scopeDays}')">${r.scopeDays}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#1e40af;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${r.scopeHours}')">${r.scopeHours}</td>
     </tr>`).join('');
   document.getElementById('results-foot').innerHTML=`
     <tr>
@@ -485,6 +514,8 @@ function calculate(){
       <td style="padding:.7rem 1rem;text-align:right;color:var(--text-4);">&#8212;</td>
       <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#16a34a;font-weight:700;" onclick="copySingle('${totalDays}')">${totalDays}</td>
       <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#1d4ed8;font-weight:700;" onclick="copySingle('${totalHours}')">${totalHours}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#15803d;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${usDays}')">${usDays}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#1e40af;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${usHours}')">${usHours}</td>
     </tr>`;
   document.getElementById('result-formula-hint').textContent=t('formula-hint');
   // ── Budget split bar ──
@@ -517,8 +548,8 @@ function buildMarkdown(){
   let md='## '+(lang==='de'?'Sprint Kapazitaten':'Sprint Capacity')+': '+r.sprintName+'\n\n';
   md+='| '+cols.join(' | ')+' |\n';
   md+='|'+cols.map(()=>'---').join('|')+'|\n';
-  r.rows.forEach(row=>{ md+='| '+row.name+' | '+row.employment+' | '+row.allocation+' | '+row.absence+' | '+row.holidays+' | '+row.available+' | '+row.focus+'% | '+row.capDays+' | '+row.capHours+' |\n'; });
-  md+='| **'+t('total')+'** | | | | | | | **'+r.totalDays+'** | **'+r.totalHours+'** |\n';
+  r.rows.forEach(row=>{ md+='| '+row.name+' | '+row.employment+' | '+row.allocation+' | '+row.absence+' | '+row.holidays+' | '+row.available+' | '+row.focus+'% | '+row.capDays+' | '+row.capHours+' | **'+row.scopeDays+'** | **'+row.scopeHours+'** |\n'; });
+  md+='| **'+t('total')+'** | | | | | | | **'+r.totalDays+'** | **'+r.totalHours+'** | **'+r.usDays+'** | **'+r.usHours+'** |\n';
   md+='\n> '+(lang==='de'?'Sprint-Tage':'Sprint Days')+': '+r.sprintDays+' | '+(lang==='de'?'Feiertage':'Holidays')+': '+r.totalHolidays+'\n\n';
   md+='### '+(lang==='de'?'Budget-Aufteilung':'Budget Split')+'\n';
   md+='| | '+(lang==='de'?'Tage':'Days')+' | '+(lang==='de'?'Stunden':'Hours')+'|\n|---|---|---|\n';
@@ -536,9 +567,9 @@ function buildPlainText(){
   const r=window._lastResult; if(!r) return '';
   const p=(s,n)=>String(s).padEnd(n), rp=(s,n)=>String(s).padStart(n), ln='-'.repeat(80);
   let txt=(lang==='de'?'Sprint Kapazitaten':'Sprint Capacity')+': '+r.sprintName+'\n'+ln+'\n';
-  txt+=p('Name',16)+rp('Empl',7)+rp('Alloc',7)+rp('Abs',6)+rp('Hols',6)+rp('Avail',8)+rp('Focus',7)+rp('Cap.d',8)+rp('Cap.h',8)+'\n'+ln+'\n';
-  r.rows.forEach(row=>{ txt+=p(row.name,16)+rp(row.employment+'%',7)+rp(row.allocation+'%',7)+rp(row.absence,6)+rp(row.holidays,6)+rp(row.available,8)+rp(row.focus+'%',7)+rp(row.capDays,8)+rp(row.capHours,8)+'\n'; });
-  txt+=ln+'\n'+p(t('total'),44)+rp(r.totalDays,8)+rp(r.totalHours,8)+'\n\n';
+  txt+=p('Name',16)+rp('Empl',7)+rp('Alloc',7)+rp('Abs',6)+rp('Hols',6)+rp('Avail',8)+rp('Focus',7)+rp('Cap.d',8)+rp('Cap.h',8)+rp('Story.d',9)+rp('Story.h',9)+'\n'+ln+'\n';
+  r.rows.forEach(row=>{ txt+=p(row.name,16)+rp(row.employment+'%',7)+rp(row.allocation+'%',7)+rp(row.absence,6)+rp(row.holidays,6)+rp(row.available,8)+rp(row.focus+'%',7)+rp(row.capDays,8)+rp(row.capHours,8)+rp(row.scopeDays,9)+rp(row.scopeHours,9)+'\n'; });
+  txt+=ln+'\n'+p(t('total'),44)+rp(r.totalDays,8)+rp(r.totalHours,8)+rp(r.usDays,9)+rp(r.usHours,9)+'\n\n';
   txt+=p((lang==='de'?'User Stories / Geplant':'User Stories / Planned'),44)+rp(r.usDays,8)+rp(r.usHours,8)+'\n';
   txt+=p((lang==='de'?'Fastlane / Puffer':'Fastlane / Buffer'),44)+rp(r.bufferDays,8)+rp(r.bufferHours,8)+'\n';
   txt+='('+t('t-sprint-scope')+': '+r.scopePct+'%)\n';
