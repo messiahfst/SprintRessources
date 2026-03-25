@@ -3,7 +3,9 @@
 A single-file web app for planning team capacity during **Scrum Sprint Planning 1**.  
 No backend, no build step — open `index.html` directly or deploy via GitHub Pages.
 
-🚀 **[Live Demo](https://messiahfst.github.io/SprintRessources/)** &nbsp;|&nbsp; 📦 **[Download latest release](https://github.com/messiahfst/SprintRessources/releases/latest)**
+🚀 **[Live on GitHub Pages](https://messiahfst.github.io/SprintRessources/)** &nbsp;|&nbsp; 📦 **[Download latest release](https://github.com/messiahfst/SprintRessources/releases/latest)**
+
+![Sprint Resource Planner](Sprint-Resource-Planner.png)
 
 ---
 
