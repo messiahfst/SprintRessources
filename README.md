@@ -22,9 +22,11 @@ No installation, no npm, no server required.
 - **Sprint settings** — name, weeks × days/week, hours/day, focus factor (global or per person)
 - **User Story Budget %** — splits capacity into planned scope vs. fastlane/buffer
 - **Public holidays** — manual entry, deducted proportionally per person
+- **DACH holiday reference** — auto-loads public holidays for 🇩🇪 Germany, 🇦🇹 Austria and 🇨🇭 Switzerland for the next 3 months (via [date.nager.at](https://date.nager.at)); one click to add any entry to the sprint
 - **Team members** — Employment %, Allocation %, Absence days, individual Focus %
 - **Disciplines** per person (e.g. Backend 60% / QA 40%) — capacity breakdown by discipline in results
 - **Results table** — Available(d), Cap(d/h), Story Cap(d/h) without buffer, per person
+- **Formula info box** — collapsible step-by-step explanation of the capacity calculation
 - **Visual budget split bar** — User Stories vs. Fastlane/Buffer
 - **Export** — Copy as Markdown or Plain Text
 - **DE / EN** language switcher · **Dark mode** · **localStorage** persistence
@@ -34,11 +36,13 @@ No installation, no npm, no server required.
 ## Capacity Formula
 
 ```
-Available (d) = (SprintDays − Holidays − Absence) × Employment% × Allocation%
-Capacity  (d) = Available × Focus%
-Story     (d) = Capacity × UserStoryBudget%
-Buffer    (d) = Capacity × (1 − UserStoryBudget%)
+① Available (d) = (SprintDays − Holidays − Absence) × Employment% × Allocation%
+② Capacity  (d) = Available × Focus%     (hours: × Hours/Day)
+③ Story     (d) = Capacity × UserStoryBudget%
+④ Buffer    (d) = Capacity × (1 − UserStoryBudget%)
 ```
+
+The formula is shown inline in the app via the collapsible **"How the Formula Works"** info box.
 
 ---
 
@@ -51,6 +55,10 @@ Buffer    (d) = Capacity × (1 − UserStoryBudget%)
 ---
 
 ## Changelog
+
+### v1.2.0 — 2026-03-26
+- Added collapsible **formula info box** in the results section
+- Added **DACH holiday reference** with live API data for DE / AT / CH (next 3 months)
 
 ### [v1.0.0](https://github.com/messiahfst/SprintRessources/releases/tag/v1.0.0) — 2026-03-25
 Initial public release — all features listed above.
