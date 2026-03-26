@@ -214,6 +214,37 @@
     <p class="lbl" style="margin-top:.5rem;text-align:right;" id="result-formula-hint"></p>
     <p class="lbl" style="text-align:right;" id="t-click-copy-hint">Click any result cell to copy that value.</p>
 
+    <!-- Formula Infobox -->
+    <div style="margin-top:.8rem;">
+      <button onclick="toggleFormulaBox()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;background:var(--bg-alt);border:1px solid var(--border);border-radius:.6rem;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--text-2);transition:background .15s;" onmouseover="this.style.background='var(--accent-lt)'" onmouseout="this.style.background='var(--bg-alt)'">
+        <span style="display:flex;align-items:center;gap:.45rem;">
+          <svg width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span id="t-formula-box-title">How the Formula Works</span>
+        </span>
+        <svg id="formula-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="color:var(--text-3);transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="formula-box-body" style="display:none;border:1px solid var(--border);border-top:none;border-radius:0 0 .6rem .6rem;padding:.85rem 1rem;background:var(--bg-card);">
+        <div style="display:flex;flex-direction:column;gap:.6rem;">
+          <div style="display:flex;align-items:flex-start;gap:.65rem;">
+            <span style="background:var(--accent-lt);color:var(--accent);font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">1</span>
+            <div><div style="font-size:.8rem;font-weight:600;color:var(--text-2);" id="t-formula-s1"></div><div style="font-size:.78rem;color:var(--text-3);margin-top:.1rem;font-family:ui-monospace,monospace;" id="t-formula-s1-eq"></div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.65rem;">
+            <span style="background:var(--accent-lt);color:var(--accent);font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">2</span>
+            <div><div style="font-size:.8rem;font-weight:600;color:var(--text-2);" id="t-formula-s2"></div><div style="font-size:.78rem;color:var(--text-3);margin-top:.1rem;font-family:ui-monospace,monospace;" id="t-formula-s2-eq"></div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.65rem;">
+            <span style="background:rgba(34,197,94,.13);color:#16a34a;font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">3</span>
+            <div><div style="font-size:.8rem;font-weight:600;color:var(--text-2);" id="t-formula-s3"></div><div style="font-size:.78rem;color:var(--text-3);margin-top:.1rem;font-family:ui-monospace,monospace;" id="t-formula-s3-eq"></div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:.65rem;">
+            <span style="background:rgba(249,115,22,.13);color:#c2410c;font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">4</span>
+            <div><div style="font-size:.8rem;font-weight:600;color:var(--text-2);" id="t-formula-s4"></div><div style="font-size:.78rem;color:var(--text-3);margin-top:.1rem;font-family:ui-monospace,monospace;" id="t-formula-s4-eq"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Budget Split -->
     <div id="split-section" style="display:none;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border);">
       <h3 class="sec-title" style="font-size:.9rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;">
@@ -302,7 +333,12 @@ const i18n = {
     "toast-copied":"Copied!","placeholder-name":"e.g. Alice","holiday-placeholder":"e.g. Easter Monday",
     "alert-no-members":"Please add at least one team member.",
     "lbl-disciplines":"Disciplines","disc-placeholder":"e.g. Backend","disc-add":"Add",
-    "disc-warn":"Sum ≠ 100% (currently {0}%)","t-disc-title":"Capacity by Discipline"
+    "disc-warn":"Sum ≠ 100% (currently {0}%)","t-disc-title":"Capacity by Discipline",
+    "t-formula-box-title":"How the Formula Works",
+    "t-formula-s1":"① Available Days","t-formula-s1-eq":"= (Sprint Days − Holidays − Absence) × Employment% × Allocation%",
+    "t-formula-s2":"② Capacity (Days / Hours)","t-formula-s2-eq":"= Available Days × Focus%   (Hours: × Hours/Day)",
+    "t-formula-s3":"③ Story Budget","t-formula-s3-eq":"= Capacity × Story Budget%",
+    "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacity × (100% − Story Budget%)"
   },
   de: {
     "t-title":"Sprint Ressourcen-Planer","t-subtitle":"Teamkapazität für das Sprint Planning planen",
@@ -340,13 +376,25 @@ const i18n = {
     "toast-copied":"Kopiert!","placeholder-name":"z.B. Alice","holiday-placeholder":"z.B. Ostermontag",
     "alert-no-members":"Bitte mindestens ein Teammitglied hinzufugen.",
     "lbl-disciplines":"Disziplinen","disc-placeholder":"z.B. Backend","disc-add":"Hinzuf.",
-    "disc-warn":"Summe ≠ 100% (aktuell {0}%)","t-disc-title":"Kapazität nach Disziplin"
+    "disc-warn":"Summe ≠ 100% (aktuell {0}%)","t-disc-title":"Kapazität nach Disziplin",
+    "t-formula-box-title":"Formel-Erklärung",
+    "t-formula-s1":"① Verfügbare Tage","t-formula-s1-eq":"= (Sprint-Tage − Feiertage − Abwesenheit) × Pensum% × Zuteilung%",
+    "t-formula-s2":"② Kapazität (Tage / Stunden)","t-formula-s2-eq":"= Verfügbare Tage × Fokus%   (Stunden: × Std/Tag)",
+    "t-formula-s3":"③ Story-Budget","t-formula-s3-eq":"= Kapazität × Story-Budget%",
+    "t-formula-s4":"④ Puffer / Fastlane","t-formula-s4-eq":"= Kapazität × (100% − Story-Budget%)"
   }
 };
 let lang = localStorage.getItem('srp-lang') || 'en';
 let members = [], holidays = [];
 function t(k){ return (i18n[lang]&&i18n[lang][k])||i18n.en[k]||k; }
 function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); }
+function toggleFormulaBox(){
+  const body=document.getElementById('formula-box-body');
+  const chev=document.getElementById('formula-chevron');
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  chev.style.transform=open?'':'rotate(180deg)';
+}
 function applyLang(){
   document.documentElement.lang=lang;
   Object.keys(i18n.en).forEach(k=>{ const el=document.getElementById(k); if(el) el.textContent=t(k); });
