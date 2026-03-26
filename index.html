@@ -154,6 +154,20 @@
         <button class="btn-secondary" style="font-size:.75rem;padding:.375rem .75rem;" onclick="cancelHoliday()" id="t-cancel">Cancel</button>
       </div>
       <p class="lbl" style="margin-top:.35rem;" id="t-holiday-hint">Holidays are deducted proportionally per person (scaled by employment &amp; allocation).</p>
+
+      <!-- DACH Holiday Reference -->
+      <div style="margin-top:.85rem;">
+        <button onclick="toggleDachRef()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;background:var(--bg-alt);border:1px solid var(--border);border-radius:.6rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--text-2);transition:background .15s;" onmouseover="this.style.background='var(--accent-lt)'" onmouseout="this.style.background='var(--bg-alt)'">
+          <span style="display:flex;align-items:center;gap:.4rem;">
+            <svg width="13" height="13" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="t-dach-ref-title">DACH Holidays – next 3 months</span>
+          </span>
+          <svg id="dach-chevron" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="color:var(--text-3);transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="dach-ref-body" style="display:none;border:1px solid var(--border);border-top:none;border-radius:0 0 .6rem .6rem;padding:.75rem;background:var(--bg-card);">
+          <div id="dach-ref-content"><span style="font-size:.75rem;color:var(--text-4);" id="t-dach-loading">Loading…</span></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -338,7 +352,10 @@ const i18n = {
     "t-formula-s1":"① Available Days","t-formula-s1-eq":"= (Sprint Days − Holidays − Absence) × Employment% × Allocation%",
     "t-formula-s2":"② Capacity (Days / Hours)","t-formula-s2-eq":"= Available Days × Focus%   (Hours: × Hours/Day)",
     "t-formula-s3":"③ Story Budget","t-formula-s3-eq":"= Capacity × Story Budget%",
-    "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacity × (100% − Story Budget%)"
+    "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacity × (100% − Story Budget%)",
+    "t-dach-ref-title":"DACH Holidays – next 3 months",
+    "t-dach-loading":"Loading…","t-dach-error":"Could not load holidays.",
+    "t-dach-none":"No upcoming public holidays found.","t-dach-add":"+ Add"
   },
   de: {
     "t-title":"Sprint Ressourcen-Planer","t-subtitle":"Teamkapazität für das Sprint Planning planen",
@@ -381,13 +398,82 @@ const i18n = {
     "t-formula-s1":"① Verfügbare Tage","t-formula-s1-eq":"= (Sprint-Tage − Feiertage − Abwesenheit) × Pensum% × Zuteilung%",
     "t-formula-s2":"② Kapazität (Tage / Stunden)","t-formula-s2-eq":"= Verfügbare Tage × Fokus%   (Stunden: × Std/Tag)",
     "t-formula-s3":"③ Story-Budget","t-formula-s3-eq":"= Kapazität × Story-Budget%",
-    "t-formula-s4":"④ Puffer / Fastlane","t-formula-s4-eq":"= Kapazität × (100% − Story-Budget%)"
+    "t-formula-s4":"④ Puffer / Fastlane","t-formula-s4-eq":"= Kapazität × (100% − Story-Budget%)",
+    "t-dach-ref-title":"DACH-Feiertage – nächste 3 Monate",
+    "t-dach-loading":"Wird geladen…","t-dach-error":"Feiertage konnten nicht geladen werden.",
+    "t-dach-none":"Keine bevorstehenden Feiertage gefunden.","t-dach-add":"+ Hinzuf."
   }
 };
 let lang = localStorage.getItem('srp-lang') || 'en';
 let members = [], holidays = [];
 function t(k){ return (i18n[lang]&&i18n[lang][k])||i18n.en[k]||k; }
-function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); }
+function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); window._dachLoaded=false; loadDachHolidays(); }
+function toggleDachRef(){
+  const body=document.getElementById('dach-ref-body');
+  const chev=document.getElementById('dach-chevron');
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  chev.style.transform=open?'':'rotate(180deg)';
+}
+function addDachHoliday(name,days){
+  holidays.push({name:name,days:days||1});
+  renderHolidays();
+  saveState();
+  showToast();
+}
+async function loadDachHolidays(){
+  if(window._dachLoaded)return;
+  window._dachLoaded=true;
+  const content=document.getElementById('dach-ref-content');
+  if(!content)return;
+  const cnames={en:{DE:'Germany',AT:'Austria',CH:'Switzerland'},de:{DE:'Deutschland',AT:'Österreich',CH:'Schweiz'}};
+  const cflags={DE:'🇩🇪',AT:'🇦🇹',CH:'🇨🇭'};
+  const codes=['DE','AT','CH'];
+  const now=new Date();
+  const end=new Date(now); end.setMonth(end.getMonth()+3);
+  const years=[...new Set([now.getFullYear(),end.getFullYear()])];
+  try{
+    const grouped={DE:[],AT:[],CH:[]};
+    for(const code of codes){
+      for(const year of years){
+        const res=await fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code);
+        if(!res.ok)continue;
+        const data=await res.json();
+        const seen=new Set(grouped[code].map(x=>x.date));
+        data.forEach(h=>{
+          if(seen.has(h.date))return;
+          const d=new Date(h.date+'T00:00:00');
+          if(d>now&&d<=end){grouped[code].push(h);seen.add(h.date);}
+        });
+      }
+    }
+    const hasAny=codes.some(c=>grouped[c].length>0);
+    if(!hasAny){content.innerHTML='<span style="font-size:.75rem;color:var(--text-4);">'+t('t-dach-none')+'</span>';return;}
+    const clangs=cnames[lang]||cnames.en;
+    content.innerHTML=codes.map(c=>{
+      const hols=grouped[c]; if(!hols.length)return'';
+      const rows=hols.map(h=>{
+        const d=new Date(h.date+'T00:00:00');
+        const ds=d.toLocaleDateString(lang==='de'?'de-CH':'en-GB',{day:'2-digit',month:'2-digit'});
+        const nm=escHtml(h.localName||h.name);
+        return'<div style="display:flex;align-items:center;justify-content:space-between;padding:.28rem 0;border-bottom:1px solid var(--border);">'
+          +'<div style="display:flex;align-items:center;gap:.5rem;">'
+          +'<span style="font-size:.68rem;color:var(--text-4);font-variant-numeric:tabular-nums;width:2.5rem;flex-shrink:0;">'+ds+'</span>'
+          +'<span style="font-size:.77rem;color:var(--text-2);">'+nm+'</span>'
+          +'</div>'
+          +'<button class="btn-outline" style="font-size:.63rem;padding:.12rem .42rem;flex-shrink:0;" '
+          +'onclick="addDachHoliday(this.getAttribute(\'data-n\'),1)" data-n="'+nm+'">'+t('t-dach-add')+'</button>'
+          +'</div>';
+      }).join('');
+      return'<div style="margin-bottom:.65rem;">'
+        +'<div style="font-size:.68rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem;">'+cflags[c]+' '+escHtml(clangs[c])+'</div>'
+        +rows
+        +'</div>';
+    }).join('');
+  }catch(e){
+    content.innerHTML='<span style="font-size:.75rem;color:#ef4444;">'+t('t-dach-error')+'</span>';
+  }
+}
 function toggleFormulaBox(){
   const body=document.getElementById('formula-box-body');
   const chev=document.getElementById('formula-chevron');
@@ -677,6 +763,7 @@ calcSprintDays();
 if(!members.length) members=[{name:'',employment:100,allocation:100,absence:0,focus:70},{name:'',employment:100,allocation:100,absence:0,focus:70},{name:'',employment:100,allocation:100,absence:0,focus:70}];
 renderTeam();
 renderHolidays();
+loadDachHolidays();
 document.addEventListener('input',saveState);
 document.addEventListener('change',saveState);
 </script>
