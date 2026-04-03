@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; connect-src https://date.nager.at; img-src 'self' data:; font-src 'self';">
   <title>Sprint Resource Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -300,9 +301,9 @@
   <p style="text-align:center;font-size:.75rem;color:var(--text-4);padding-bottom:1rem;line-height:1.8;">
     Sprint Resource Planner &middot;
     MIT License &middot;
-    Made by <a href="https://studer.rocks" target="_blank" rel="noopener" style="text-decoration:underline;color:var(--accent);">studer.rocks</a>
+    Made by <a href="https://studer.rocks" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;color:var(--accent);">studer.rocks</a>
     &middot;
-    <a href="https://github.com/messiahfst/SprintRessources" target="_blank" rel="noopener" style="text-decoration:underline;color:var(--accent);" id="t-github-link">GitHub</a>
+    <a href="https://github.com/messiahfst/SprintRessources" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;color:var(--accent);" id="t-github-link">GitHub</a>
   </p>
 </div>
 
@@ -366,9 +367,9 @@ const i18n = {
     "t-focus-individual-opt":"Individuell (pro Person)","t-focus-factor":"Fokus-Faktor (%)",
     "t-holidays":"Feiertage im Sprint","t-add-holiday":"+ Feiertag hinzufügen",
     "t-holiday-name-lbl":"Name","t-holiday-days-lbl":"Tage",
-    "t-confirm-holiday":"Hinzufugen","t-cancel":"Abbrechen",
+    "t-confirm-holiday":"Hinzufügen","t-cancel":"Abbrechen",
     "t-holiday-hint":"Feiertage werden anteilig abgezogen (skaliert nach Anstellungsgrad & Projektzuteilung).",
-    "t-team":"Teammitglieder","t-add-member":"+ Mitglied hinzufugen",
+    "t-team":"Teammitglieder","t-add-member":"+ Mitglied hinzufügen",
     "t-member-hint":"Anstellungsgrad %: Pensum (80% = 4T/Woche). Projektzuteilung %: Anteil ihrer Zeit in diesem Sprint.",
     "t-calculate":"Kapazität berechnen","t-results":"Ergebnisse",
     "t-copy-md":"Als Markdown kopieren","t-copy-text":"Als Text kopieren",
@@ -391,7 +392,7 @@ const i18n = {
     "summary-unit-days":"Tage","summary-unit-hours":"Std","summary-unit-devs":"Devs",
     "formula-hint":"Verfügbar(T) = (Sprint-Tage - Feiertage - Abwesenheit) x Pensum% x Zuteilung%  |  Kapazität = Verfügbar x Fokus%",
     "toast-copied":"Kopiert!","placeholder-name":"z.B. Alice","holiday-placeholder":"z.B. Ostermontag",
-    "alert-no-members":"Bitte mindestens ein Teammitglied hinzufugen.",
+    "alert-no-members":"Bitte mindestens ein Teammitglied hinzufügen.",
     "lbl-disciplines":"Disziplinen","disc-placeholder":"z.B. Backend","disc-add":"Hinzuf.",
     "disc-warn":"Summe ≠ 100% (aktuell {0}%)","t-disc-title":"Kapazität nach Disziplin",
     "t-formula-box-title":"Formel-Erklärung",
@@ -434,19 +435,23 @@ async function loadDachHolidays(){
   const years=[...new Set([now.getFullYear(),end.getFullYear()])];
   try{
     const grouped={DE:[],AT:[],CH:[]};
-    for(const code of codes){
-      for(const year of years){
-        const res=await fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code);
-        if(!res.ok)continue;
-        const data=await res.json();
-        const seen=new Set(grouped[code].map(x=>x.date));
-        data.forEach(h=>{
-          if(seen.has(h.date))return;
-          const d=new Date(h.date+'T00:00:00');
-          if(d>now&&d<=end){grouped[code].push(h);seen.add(h.date);}
-        });
-      }
-    }
+    const requests=codes.flatMap(code=>years.map(year=>
+      fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code)
+        .then(r=>r.ok?r.json().then(d=>({code,data:d})):null)
+        .catch(()=>null)
+    ));
+    const results=await Promise.allSettled(requests);
+    results.forEach(r=>{
+      if(r.status!=='fulfilled'||!r.value)return;
+      const{code,data}=r.value;
+      if(!Array.isArray(data))return;
+      const seen=new Set(grouped[code].map(x=>x.date));
+      data.slice(0,100).forEach(h=>{
+        if(seen.has(h.date))return;
+        const d=new Date(h.date+'T00:00:00');
+        if(d>now&&d<=end){grouped[code].push(h);seen.add(h.date);}
+      });
+    });
     const hasAny=codes.some(c=>grouped[c].length>0);
     if(!hasAny){content.innerHTML='<span style="font-size:.75rem;color:var(--text-4);">'+t('t-dach-none')+'</span>';return;}
     const clangs=cnames[lang]||cnames.en;
@@ -727,17 +732,21 @@ function copyToClipboard(text){
   });
 }
 function showToast(){ const el=document.getElementById('toast'); el.textContent=t('toast-copied'); el.style.opacity='1'; setTimeout(()=>{el.style.opacity='0';},2000); }
+let _saveTimer;
 function saveState(){
-  try{ localStorage.setItem('srp-state',JSON.stringify({
-    sprintName:document.getElementById('sprintName').value,
-    sprintWeeks:document.getElementById('sprintWeeks').value,
-    workdaysPerWeek:document.getElementById('workdaysPerWeek').value,
-    hoursPerDay:document.getElementById('hoursPerDay').value,
-    focusMode:document.getElementById('focusMode').value,
-    focusFactor:document.getElementById('focusFactor').value,
-    sprintScope:document.getElementById('sprintScope').value,
-    members,holidays,lang
-  })); }catch(e){}
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>{
+    try{ localStorage.setItem('srp-state',JSON.stringify({
+      sprintName:document.getElementById('sprintName').value,
+      sprintWeeks:document.getElementById('sprintWeeks').value,
+      workdaysPerWeek:document.getElementById('workdaysPerWeek').value,
+      hoursPerDay:document.getElementById('hoursPerDay').value,
+      focusMode:document.getElementById('focusMode').value,
+      focusFactor:document.getElementById('focusFactor').value,
+      sprintScope:document.getElementById('sprintScope').value,
+      members,holidays,lang
+    })); }catch(e){}
+  },300);
 }
 function loadState(){
   try{
@@ -749,8 +758,21 @@ function loadState(){
     if(s.focusMode) document.getElementById('focusMode').value=s.focusMode;
     if(s.focusFactor) document.getElementById('focusFactor').value=s.focusFactor;
     if(s.sprintScope) document.getElementById('sprintScope').value=s.sprintScope;
-    if(Array.isArray(s.members)) members=s.members;
-    if(Array.isArray(s.holidays)) holidays=s.holidays;
+    if(Array.isArray(s.members)) members=s.members.map(m=>({
+      name:String(m.name||'').slice(0,100),
+      employment:Math.min(100,Math.max(0,parseFloat(m.employment)||100)),
+      allocation:Math.min(100,Math.max(0,parseFloat(m.allocation)||100)),
+      absence:Math.max(0,parseFloat(m.absence)||0),
+      focus:Math.min(100,Math.max(0,parseFloat(m.focus)||70)),
+      disciplines:Array.isArray(m.disciplines)?m.disciplines.map(d=>({
+        name:String(d.name||'').slice(0,50),
+        pct:Math.min(100,Math.max(0,parseFloat(d.pct)||0))
+      })):[]
+    }));
+    if(Array.isArray(s.holidays)) holidays=s.holidays.map(h=>({
+      name:String(h.name||'').slice(0,100),
+      days:Math.min(14,Math.max(0.5,parseFloat(h.days)||1))
+    }));
     if(s.lang) lang=s.lang;
   }catch(e){}
 }
