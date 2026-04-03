@@ -363,7 +363,7 @@ const i18n = {
     "t-formula-s2":"② Capacity (Days / Hours)","t-formula-s2-eq":"= Available Days × Focus%   (Hours: × Hours/Day)",
     "t-formula-s3":"③ Story Budget","t-formula-s3-eq":"= Capacity × Story Budget%",
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacity × (100% − Story Budget%)",
-    "t-dach-ref-title":"DACH Holidays – next 3 months",
+    "t-dach-ref-title":"Public Holidays – next 3 months",
     "t-dach-loading":"Loading…","t-dach-error":"Could not load holidays.",
     "t-dach-none":"No upcoming public holidays found.","t-dach-add":"+ Add",
     "export-sprint-cap":"Sprint Capacity","export-budget-split":"Budget Split",
@@ -414,7 +414,7 @@ const i18n = {
     "t-formula-s2":"② Kapazität (Tage / Stunden)","t-formula-s2-eq":"= Verfügbare Tage × Fokus%   (Stunden: × Std/Tag)",
     "t-formula-s3":"③ Story-Budget","t-formula-s3-eq":"= Kapazität × Story-Budget%",
     "t-formula-s4":"④ Puffer / Fastlane","t-formula-s4-eq":"= Kapazität × (100% − Story-Budget%)",
-    "t-dach-ref-title":"DACH-Feiertage – nächste 3 Monate",
+    "t-dach-ref-title":"Feiertage – nächste 3 Monate",
     "t-dach-loading":"Wird geladen…","t-dach-error":"Feiertage konnten nicht geladen werden.",
     "t-dach-none":"Keine bevorstehenden Feiertage gefunden.","t-dach-add":"+ Hinzuf.",
     "export-sprint-cap":"Sprint Kapazitäten","export-budget-split":"Budget-Aufteilung",
@@ -465,7 +465,7 @@ const i18n = {
     "t-formula-s2":"② Capacité (Jours / Heures)","t-formula-s2-eq":"= Jours disponibles × Focus%   (Heures : × H/Jour)",
     "t-formula-s3":"③ Budget Stories","t-formula-s3-eq":"= Capacité × Budget Stories%",
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacité × (100% − Budget Stories%)",
-    "t-dach-ref-title":"Jours fériés FR · BE · CH – 3 prochains mois",
+    "t-dach-ref-title":"Jours fériés – 3 prochains mois",
     "t-dach-loading":"Chargement…","t-dach-error":"Impossible de charger les jours fériés.",
     "t-dach-none":"Aucun jour férié à venir.","t-dach-add":"+ Ajouter",
     "export-sprint-cap":"Capacité Sprint","export-budget-split":"Répartition Budget",
@@ -516,7 +516,7 @@ const i18n = {
     "t-formula-s2":"② Capacità (Giorni / Ore)","t-formula-s2-eq":"= Giorni disponibili × Focus%   (Ore: × Ore/Giorno)",
     "t-formula-s3":"③ Budget Story","t-formula-s3-eq":"= Capacità × Budget Story%",
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacità × (100% − Budget Story%)",
-    "t-dach-ref-title":"Festività IT · CH – prossimi 3 mesi",
+    "t-dach-ref-title":"Festività – prossimi 3 mesi",
     "t-dach-loading":"Caricamento…","t-dach-error":"Impossibile caricare le festività.",
     "t-dach-none":"Nessuna festività imminente.","t-dach-add":"+ Aggiungi",
     "export-sprint-cap":"Capacità Sprint","export-budget-split":"Ripartizione Budget",
@@ -567,7 +567,7 @@ const i18n = {
     "t-formula-s2":"② Capacidad (Días / Horas)","t-formula-s2-eq":"= Días disponibles × Enfoque%   (Horas: × H/Día)",
     "t-formula-s3":"③ Presupuesto Stories","t-formula-s3-eq":"= Capacidad × Presupuesto Stories%",
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacidad × (100% − Presupuesto Stories%)",
-    "t-dach-ref-title":"Festivos ES – próximos 3 meses",
+    "t-dach-ref-title":"Festivos – próximos 3 meses",
     "t-dach-loading":"Cargando…","t-dach-error":"No se pudieron cargar los festivos.",
     "t-dach-none":"No hay festivos próximos.","t-dach-add":"+ Añadir",
     "export-sprint-cap":"Capacidad Sprint","export-budget-split":"Reparto Presupuesto",
@@ -618,7 +618,7 @@ const i18n = {
     "t-formula-s2":"② Kapazität (Täg / Schtunde)","t-formula-s2-eq":"= Verfüegbari Täg × Fokus%   (Schtunde: × Schtd/Tag)",
     "t-formula-s3":"③ Story-Budget","t-formula-s3-eq":"= Kapazität × Story-Budget%",
     "t-formula-s4":"④ Puffer / Fastlane","t-formula-s4-eq":"= Kapazität × (100% − Story-Budget%)",
-    "t-dach-ref-title":"DACH-Feiertäg – nöächschti 3 Mönet",
+    "t-dach-ref-title":"Feiertäg – nöächschti 3 Mönet",
     "t-dach-loading":"Wird glade…","t-dach-error":"Feiertäg hend sich nöd lade la.",
     "t-dach-none":"Gar keni bechömmtige Feiertäg gfunde.","t-dach-add":"+ Hinzuefüege",
     "export-sprint-cap":"Sprint Kapazitäte","export-budget-split":"Budget-Ufteiliig",
@@ -665,7 +665,8 @@ async function loadDachHolidays(){
   const cflags={DE:'🇩🇪',AT:'🇦🇹',CH:'🇨🇭',FR:'🇫🇷',BE:'🇧🇪',IT:'🇮🇹',ES:'🇪🇸'};
   const langCodes={en:['DE','AT','CH'],de:['DE','AT','CH'],fr:['FR','BE','CH'],it:['IT','CH'],es:['ES'],ch:['DE','AT','CH']};
   const codes=langCodes[lang]||['DE','AT','CH'];
-  const now=new Date();
+  const titleEl=document.getElementById('t-dach-ref-title');
+  if(titleEl) titleEl.textContent=codes.map(c=>cflags[c]).join(' ')+' '+t('t-dach-ref-title');
   const end=new Date(now); end.setMonth(end.getMonth()+3);
   const years=[...new Set([now.getFullYear(),end.getFullYear()])];
   try{
