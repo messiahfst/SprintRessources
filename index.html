@@ -465,7 +465,7 @@ const i18n = {
     "t-formula-s2":"② Capacité (Jours / Heures)","t-formula-s2-eq":"= Jours disponibles × Focus%   (Heures : × H/Jour)",
     "t-formula-s3":"③ Budget Stories","t-formula-s3-eq":"= Capacité × Budget Stories%",
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacité × (100% − Budget Stories%)",
-    "t-dach-ref-title":"Jours fériés DACH – 3 prochains mois",
+    "t-dach-ref-title":"Jours fériés FR · BE · CH – 3 prochains mois",
     "t-dach-loading":"Chargement…","t-dach-error":"Impossible de charger les jours fériés.",
     "t-dach-none":"Aucun jour férié à venir.","t-dach-add":"+ Ajouter",
     "export-sprint-cap":"Capacité Sprint","export-budget-split":"Répartition Budget",
@@ -516,7 +516,7 @@ const i18n = {
     "t-formula-s2":"② Capacità (Giorni / Ore)","t-formula-s2-eq":"= Giorni disponibili × Focus%   (Ore: × Ore/Giorno)",
     "t-formula-s3":"③ Budget Story","t-formula-s3-eq":"= Capacità × Budget Story%",
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacità × (100% − Budget Story%)",
-    "t-dach-ref-title":"Festività DACH – prossimi 3 mesi",
+    "t-dach-ref-title":"Festività IT · CH – prossimi 3 mesi",
     "t-dach-loading":"Caricamento…","t-dach-error":"Impossibile caricare le festività.",
     "t-dach-none":"Nessuna festività imminente.","t-dach-add":"+ Aggiungi",
     "export-sprint-cap":"Capacità Sprint","export-budget-split":"Ripartizione Budget",
@@ -567,7 +567,7 @@ const i18n = {
     "t-formula-s2":"② Capacidad (Días / Horas)","t-formula-s2-eq":"= Días disponibles × Enfoque%   (Horas: × H/Día)",
     "t-formula-s3":"③ Presupuesto Stories","t-formula-s3-eq":"= Capacidad × Presupuesto Stories%",
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacidad × (100% − Presupuesto Stories%)",
-    "t-dach-ref-title":"Festivos DACH – próximos 3 meses",
+    "t-dach-ref-title":"Festivos ES – próximos 3 meses",
     "t-dach-loading":"Cargando…","t-dach-error":"No se pudieron cargar los festivos.",
     "t-dach-none":"No hay festivos próximos.","t-dach-add":"+ Añadir",
     "export-sprint-cap":"Capacidad Sprint","export-budget-split":"Reparto Presupuesto",
@@ -661,14 +661,15 @@ async function loadDachHolidays(){
   _dachLoaded=true;
   const content=document.getElementById('dach-ref-content');
   if(!content)return;
-  const cnames={en:{DE:'Germany',AT:'Austria',CH:'Switzerland'},de:{DE:'Deutschland',AT:'Österreich',CH:'Schweiz'},fr:{DE:'Allemagne',AT:'Autriche',CH:'Suisse'},it:{DE:'Germania',AT:'Austria',CH:'Svizzera'},es:{DE:'Alemania',AT:'Austria',CH:'Suiza'},ch:{DE:'Dütschland',AT:'Öschterrich',CH:'Schwiiz'}};
-  const cflags={DE:'🇩🇪',AT:'🇦🇹',CH:'🇨🇭'};
-  const codes=['DE','AT','CH'];
+  const cnames={en:{DE:'Germany',AT:'Austria',CH:'Switzerland',FR:'France',BE:'Belgium',IT:'Italy',ES:'Spain'},de:{DE:'Deutschland',AT:'Österreich',CH:'Schweiz',FR:'Frankreich',BE:'Belgien',IT:'Italien',ES:'Spanien'},fr:{DE:'Allemagne',AT:'Autriche',CH:'Suisse',FR:'France',BE:'Belgique',IT:'Italie',ES:'Espagne'},it:{DE:'Germania',AT:'Austria',CH:'Svizzera',FR:'Francia',BE:'Belgio',IT:'Italia',ES:'Spagna'},es:{DE:'Alemania',AT:'Austria',CH:'Suiza',FR:'Francia',BE:'Bélgica',IT:'Italia',ES:'España'},ch:{DE:'Dütschland',AT:'Öschterrich',CH:'Schwiiz',FR:'Frankriich',BE:'Belgie',IT:'Italie',ES:'Schpanie'}};
+  const cflags={DE:'🇩🇪',AT:'🇦🇹',CH:'🇨🇭',FR:'🇫🇷',BE:'🇧🇪',IT:'🇮🇹',ES:'🇪🇸'};
+  const langCodes={en:['DE','AT','CH'],de:['DE','AT','CH'],fr:['FR','BE','CH'],it:['IT','CH'],es:['ES'],ch:['DE','AT','CH']};
+  const codes=langCodes[lang]||['DE','AT','CH'];
   const now=new Date();
   const end=new Date(now); end.setMonth(end.getMonth()+3);
   const years=[...new Set([now.getFullYear(),end.getFullYear()])];
   try{
-    const grouped={DE:[],AT:[],CH:[]};
+    const grouped=Object.fromEntries(codes.map(c=>[c,[]]));
     const ctrl=new AbortController();
     const tid=setTimeout(()=>ctrl.abort(),5000);
     const requests=codes.flatMap(code=>years.map(year=>
