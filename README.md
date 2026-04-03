@@ -56,6 +56,17 @@ The formula is shown inline in the app via the collapsible **"How the Formula Wo
 
 ## Changelog
 
+### [v1.4.0](https://github.com/messiahfst/SprintRessources/releases/tag/v1.4.0) — 2025-07-10
+
+**Mehrsprachigkeit / Multi-Language**
+- Neue Sprachen: Français 🇫🇷, Italiano 🇮🇹, Español 🇪🇸 — vollständig mit ~70 i18n-Keys übersetzt
+- Alle UI-Texte, Formeln, Tabellenspalten, Export-Strings und DACH-Ländernamen mehrsprachig
+- Easter Egg: 🇨🇭 Schwiizerdütsch — durch Klick auf den Schweiz-Header im DACH-Feiertag-Bereich freischaltbar; Toast-Bestätigung, localStorage-Flag `srp-ch-unlocked`
+- `buildMarkdown()` / `buildPlainText()`: alle hartcodierten `lang==='de'`-Checks durch `t('export-*')`-Aufrufe ersetzt
+- `toLocaleDateString` in DACH-Referenz nutzt jetzt sprachspezifische Locale-Map (fr-FR, it-IT, es-ES, de-CH)
+
+---
+
 ### [v1.3.0](https://github.com/messiahfst/SprintRessources/releases/tag/v1.3.0) — 2026-04-03
 
 **Security**
