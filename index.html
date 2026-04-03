@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; connect-src https://date.nager.at; img-src 'self' data:; font-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https://date.nager.at; img-src 'self' data:; font-src 'self';">
   <title>Sprint Resource Planner</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* ── Theme tokens ── */
     :root {
@@ -86,6 +85,11 @@
     th, td { border-bottom: 1px solid var(--border); }
     thead tr th { background: var(--bg-thead); color: var(--text-head); border-bottom: 2px solid var(--border); }
     tfoot tr td { background: var(--bg-thead); color: var(--text-head); border-top: 2px solid var(--border); border-bottom: none; }
+    .max-w-5xl { max-width: 64rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .copy-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button.lang-opt { background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
   </style>
 </head>
 <body>
@@ -99,13 +103,13 @@
     </div>
     <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
       <div style="position:relative;" id="lang-picker">
-        <button class="theme-toggle" onclick="toggleLangMenu(event)" title="Language" id="lang-btn" style="font-size:1.1rem;letter-spacing:0;">🌐</button>
-        <div class="lang-menu" id="lang-menu">
-          <div class="lang-opt" onclick="setLang('en');closeLangMenu()" id="lang-opt-en">🇬🇧&nbsp;English</div>
-          <div class="lang-opt" onclick="setLang('de');closeLangMenu()" id="lang-opt-de">🇩🇪&nbsp;Deutsch</div>
+        <button type="button" class="theme-toggle" onclick="toggleLangMenu(event)" title="Language" id="lang-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="lang-menu" style="font-size:1.1rem;letter-spacing:0;">🌐</button>
+        <div class="lang-menu" id="lang-menu" role="menu">
+          <button type="button" class="lang-opt" onclick="setLang('en');closeLangMenu()" id="lang-opt-en" role="menuitem">🇬🇧&nbsp;English</button>
+          <button type="button" class="lang-opt" onclick="setLang('de');closeLangMenu()" id="lang-opt-de" role="menuitem">🇩🇪&nbsp;Deutsch</button>
         </div>
       </div>
-      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+      <button type="button" id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode">
         <svg id="icon-sun" style="display:none;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg id="icon-moon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
       </button>
@@ -119,24 +123,24 @@
       <span id="t-settings">Sprint Settings</span>
     </h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:1rem;">
-      <div><label class="lbl" id="t-sprint-name">Sprint Name</label><input type="text" id="sprintName" placeholder="Sprint 42" value="Sprint 1" /></div>
-      <div><label class="lbl" id="t-sprint-weeks">Duration (weeks)</label><input type="number" id="sprintWeeks" min="1" max="8" value="2" oninput="calcSprintDays()" /></div>
-      <div><label class="lbl" id="t-workdays-week">Working Days / Week</label>
+      <div><label class="lbl" for="sprintName" id="t-sprint-name">Sprint Name</label><input type="text" id="sprintName" placeholder="Sprint 42" value="Sprint 1" /></div>
+      <div><label class="lbl" for="sprintWeeks" id="t-sprint-weeks">Duration (weeks)</label><input type="number" id="sprintWeeks" min="1" max="8" value="2" oninput="calcSprintDays()" /></div>
+      <div><label class="lbl" for="workdaysPerWeek" id="t-workdays-week">Working Days / Week</label>
         <select id="workdaysPerWeek" onchange="calcSprintDays()">
           <option value="5" selected>5</option><option value="4.5">4.5</option><option value="4">4</option><option value="3.5">3.5</option><option value="3">3</option>
         </select>
       </div>
-      <div><label class="lbl" id="t-sprint-days-calc">Sprint Days (calc.)</label><input type="number" id="sprintDays" min="1" max="60" value="10" readonly /></div>
-      <div><label class="lbl" id="t-hours-day">Hours / Day</label><input type="number" id="hoursPerDay" min="1" max="24" step="0.5" value="8" /></div>
-      <div><label class="lbl" id="t-focus-mode-label">Focus Factor Mode</label>
+      <div><label class="lbl" for="sprintDays" id="t-sprint-days-calc">Sprint Days (calc.)</label><input type="number" id="sprintDays" min="1" max="60" value="10" readonly /></div>
+      <div><label class="lbl" for="hoursPerDay" id="t-hours-day">Hours / Day</label><input type="number" id="hoursPerDay" min="1" max="24" step="0.5" value="8" /></div>
+      <div><label class="lbl" for="focusMode" id="t-focus-mode-label">Focus Factor Mode</label>
         <select id="focusMode" onchange="renderTeam()">
           <option value="global" id="t-focus-global-opt">Global (one for all)</option>
           <option value="individual" id="t-focus-individual-opt">Individual (per person)</option>
         </select>
       </div>
-      <div id="global-focus-wrap"><label class="lbl" id="t-focus-factor">Focus Factor (%)</label><input type="number" id="focusFactor" min="10" max="100" value="70" /></div>
+      <div id="global-focus-wrap"><label class="lbl" for="focusFactor" id="t-focus-factor">Focus Factor (%)</label><input type="number" id="focusFactor" min="10" max="100" value="70" /></div>
       <div>
-        <label class="lbl" id="t-sprint-scope">User Story Budget (%)</label>
+        <label class="lbl" for="sprintScope" id="t-sprint-scope">User Story Budget (%)</label>
         <input type="number" id="sprintScope" min="10" max="100" step="5" value="70" />
         <span class="lbl" style="margin-top:.25rem;font-size:.7rem;" id="t-sprint-scope-hint">% of capacity for planned tickets</span>
       </div>
@@ -149,8 +153,8 @@
       </div>
       <div id="holiday-list" style="display:flex;flex-wrap:wrap;gap:.25rem;min-height:1.5rem;"></div>
       <div id="holiday-input-wrap" style="display:none;flex-wrap:wrap;gap:.5rem;margin-top:.5rem;align-items:flex-end;">
-        <div><label class="lbl" id="t-holiday-name-lbl">Name</label><input type="text" id="holiday-name-input" style="width:160px;" /></div>
-        <div><label class="lbl" id="t-holiday-days-lbl">Days</label><input type="number" id="holiday-days-input" style="width:72px;" min="0.5" max="5" step="0.5" value="1" /></div>
+        <div><label class="lbl" for="holiday-name-input" id="t-holiday-name-lbl">Name</label><input type="text" id="holiday-name-input" style="width:160px;" /></div>
+        <div><label class="lbl" for="holiday-days-input" id="t-holiday-days-lbl">Days</label><input type="number" id="holiday-days-input" style="width:72px;" min="0.5" max="5" step="0.5" value="1" /></div>
         <button class="btn-primary" style="font-size:.75rem;padding:.375rem .75rem;" onclick="confirmHoliday()" id="t-confirm-holiday">Add</button>
         <button class="btn-secondary" style="font-size:.75rem;padding:.375rem .75rem;" onclick="cancelHoliday()" id="t-cancel">Cancel</button>
       </div>
@@ -158,7 +162,7 @@
 
       <!-- DACH Holiday Reference -->
       <div style="margin-top:.85rem;">
-        <button onclick="toggleDachRef()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;background:var(--bg-alt);border:1px solid var(--border);border-radius:.6rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--text-2);transition:background .15s;" onmouseover="this.style.background='var(--accent-lt)'" onmouseout="this.style.background='var(--bg-alt)'">
+        <button type="button" id="dach-toggle-btn" aria-expanded="false" aria-controls="dach-ref-body" onclick="toggleDachRef()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;background:var(--bg-alt);border:1px solid var(--border);border-radius:.6rem;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--text-2);transition:background .15s;" onmouseover="this.style.background='var(--accent-lt)'" onmouseout="this.style.background='var(--bg-alt)'">
           <span style="display:flex;align-items:center;gap:.4rem;">
             <svg width="13" height="13" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span id="t-dach-ref-title">DACH Holidays – next 3 months</span>
@@ -187,8 +191,9 @@
   </div>
 
   <!-- Calculate -->
-  <div style="display:flex;justify-content:center;">
-    <button class="btn-primary" style="font-size:1rem;padding:.75rem 2.5rem;box-shadow:0 4px 14px rgba(99,102,241,.35);" onclick="calculate()" id="t-calculate">Calculate Capacity</button>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;">
+    <button type="button" class="btn-primary" style="font-size:1rem;padding:.75rem 2.5rem;box-shadow:0 4px 14px rgba(99,102,241,.35);" onclick="calculate()" id="t-calculate">Calculate Capacity</button>
+    <div id="calc-error" role="alert" aria-live="assertive" style="display:none;color:#ef4444;font-size:.875rem;text-align:center;"></div>
   </div>
 
   <!-- Results -->
@@ -231,7 +236,7 @@
 
     <!-- Formula Infobox -->
     <div style="margin-top:.8rem;">
-      <button onclick="toggleFormulaBox()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;background:var(--bg-alt);border:1px solid var(--border);border-radius:.6rem;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--text-2);transition:background .15s;" onmouseover="this.style.background='var(--accent-lt)'" onmouseout="this.style.background='var(--bg-alt)'">
+      <button type="button" id="formula-toggle-btn" aria-expanded="false" aria-controls="formula-box-body" onclick="toggleFormulaBox()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;background:var(--bg-alt);border:1px solid var(--border);border-radius:.6rem;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--text-2);transition:background .15s;" onmouseover="this.style.background='var(--accent-lt)'" onmouseout="this.style.background='var(--bg-alt)'">
         <span style="display:flex;align-items:center;gap:.45rem;">
           <svg width="14" height="14" fill="none" stroke="var(--accent)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <span id="t-formula-box-title">How the Formula Works</span>
@@ -308,7 +313,7 @@
 </div>
 
 <!-- Toast -->
-<div id="toast" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#1e293b;color:#fff;font-size:.875rem;padding:.5rem 1rem;border-radius:.5rem;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;pointer-events:none;z-index:999;">Copied!</div>
+<div id="toast" role="status" aria-live="polite" aria-atomic="true" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#1e293b;color:#fff;font-size:.875rem;padding:.5rem 1rem;border-radius:.5rem;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .25s;pointer-events:none;z-index:999;">Copied!</div>
 
 <script>
 const i18n = {
@@ -407,14 +412,18 @@ const i18n = {
 };
 let lang = localStorage.getItem('srp-lang') || 'en';
 let members = [], holidays = [];
+let _lastResult = null;
+let _dachLoaded = false;
 function t(k){ return (i18n[lang]&&i18n[lang][k])||i18n.en[k]||k; }
-function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); window._dachLoaded=false; loadDachHolidays(); }
+function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); _dachLoaded=false; loadDachHolidays(); }
 function toggleDachRef(){
   const body=document.getElementById('dach-ref-body');
   const chev=document.getElementById('dach-chevron');
+  const btn=document.getElementById('dach-toggle-btn');
   const open=body.style.display!=='none';
   body.style.display=open?'none':'block';
   chev.style.transform=open?'':'rotate(180deg)';
+  if(btn)btn.setAttribute('aria-expanded',open?'false':'true');
 }
 function addDachHoliday(name,days){
   holidays.push({name:name,days:days||1});
@@ -423,8 +432,8 @@ function addDachHoliday(name,days){
   showToast();
 }
 async function loadDachHolidays(){
-  if(window._dachLoaded)return;
-  window._dachLoaded=true;
+  if(_dachLoaded)return;
+  _dachLoaded=true;
   const content=document.getElementById('dach-ref-content');
   if(!content)return;
   const cnames={en:{DE:'Germany',AT:'Austria',CH:'Switzerland'},de:{DE:'Deutschland',AT:'Österreich',CH:'Schweiz'}};
@@ -435,12 +444,15 @@ async function loadDachHolidays(){
   const years=[...new Set([now.getFullYear(),end.getFullYear()])];
   try{
     const grouped={DE:[],AT:[],CH:[]};
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),5000);
     const requests=codes.flatMap(code=>years.map(year=>
-      fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code)
+      fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code,{signal:ctrl.signal})
         .then(r=>r.ok?r.json().then(d=>({code,data:d})):null)
         .catch(()=>null)
     ));
     const results=await Promise.allSettled(requests);
+    clearTimeout(tid);
     results.forEach(r=>{
       if(r.status!=='fulfilled'||!r.value)return;
       const{code,data}=r.value;
@@ -482,9 +494,11 @@ async function loadDachHolidays(){
 function toggleFormulaBox(){
   const body=document.getElementById('formula-box-body');
   const chev=document.getElementById('formula-chevron');
+  const btn=document.getElementById('formula-toggle-btn');
   const open=body.style.display!=='none';
   body.style.display=open?'none':'block';
   chev.style.transform=open?'':'rotate(180deg)';
+  if(btn)btn.setAttribute('aria-expanded',open?'false':'true');
 }
 function applyLang(){
   document.documentElement.lang=lang;
@@ -495,8 +509,8 @@ function applyLang(){
   document.querySelectorAll('.lang-opt').forEach(el=>el.classList.remove('active'));
   const ao=document.getElementById('lang-opt-'+lang); if(ao) ao.classList.add('active');
 }
-function toggleLangMenu(e){ e.stopPropagation(); document.getElementById('lang-menu').classList.toggle('open'); }
-function closeLangMenu(){ document.getElementById('lang-menu').classList.remove('open'); }
+function toggleLangMenu(e){ e.stopPropagation(); const menu=document.getElementById('lang-menu'); const btn=document.getElementById('lang-btn'); menu.classList.toggle('open'); btn.setAttribute('aria-expanded',menu.classList.contains('open')?'true':'false'); }
+function closeLangMenu(){ const menu=document.getElementById('lang-menu'); const btn=document.getElementById('lang-btn'); if(menu)menu.classList.remove('open'); if(btn)btn.setAttribute('aria-expanded','false'); }
 document.addEventListener('click',()=>closeLangMenu());
 function toggleTheme(){
   const html=document.documentElement;
@@ -504,6 +518,8 @@ function toggleTheme(){
   html.setAttribute('data-theme',next); localStorage.setItem('srp-theme',next);
   document.getElementById('icon-sun').style.display=next==='dark'?'block':'none';
   document.getElementById('icon-moon').style.display=next==='dark'?'none':'block';
+  const tb=document.getElementById('theme-toggle-btn');
+  if(tb)tb.setAttribute('aria-label',next==='dark'?'Switch to light mode':'Switch to dark mode');
 }
 function applyTheme(){
   const s=localStorage.getItem('srp-theme')||'light';
@@ -528,7 +544,7 @@ function removeHoliday(i){ holidays.splice(i,1); renderHolidays(); saveState(); 
 function renderHolidays(){
   const wrap=document.getElementById('holiday-list');
   if(!holidays.length){ wrap.innerHTML='<span style="font-size:.75rem;color:var(--text-4);font-style:italic;">'+t('no-holidays')+'</span>'; return; }
-  wrap.innerHTML=holidays.map((h,i)=>'<span class="holiday-tag">'+escHtml(h.name)+' ('+h.days+'d) <button onclick="removeHoliday('+i+')" style="background:none;border:none;cursor:pointer;font-weight:700;color:inherit;line-height:1;">x</button></span>').join('');
+  wrap.innerHTML=holidays.map((h,i)=>'<span class="holiday-tag">'+escHtml(h.name)+' ('+escHtml(String(h.days))+'d) <button type="button" onclick="removeHoliday('+i+')" aria-label="Remove '+escHtml(h.name)+'" style="background:none;border:none;cursor:pointer;font-weight:700;color:inherit;line-height:1;">&times;</button></span>').join('');
 }
 function addMember(){ members.push({name:'',employment:100,allocation:100,absence:0,focus:70,disciplines:[]}); renderTeam(); saveState(); }
 function removeMember(i){ members.splice(i,1); renderTeam(); saveState(); }
@@ -543,23 +559,23 @@ function renderTeam(){
     const discWarn=m.disciplines&&m.disciplines.length&&Math.abs(discTotal-100)>0.01;
     return `
     <div class="member-row">
-      <div style="flex:1;min-width:120px;"><label class="lbl">${t('lbl-name')}</label><input type="text" value="${escHtml(m.name)}" placeholder="${t('placeholder-name')}" oninput="updateMember(${i},'name',this.value)" /></div>
-      <div style="width:95px;"><label class="lbl">${t('lbl-employment')}</label><input type="number" min="10" max="100" step="5" value="${m.employment??100}" oninput="updateMember(${i},'employment',this.value)" /></div>
-      <div style="width:95px;"><label class="lbl">${t('lbl-allocation')}</label><input type="number" min="10" max="100" step="5" value="${m.allocation??100}" oninput="updateMember(${i},'allocation',this.value)" /></div>
-      <div style="width:85px;"><label class="lbl">${t('lbl-absence')}</label><input type="number" min="0" max="60" step="0.5" value="${m.absence}" oninput="updateMember(${i},'absence',this.value)" /></div>
-      ${mode==='individual'?`<div style="width:78px;"><label class="lbl">${t('lbl-focus-ind')}</label><input type="number" min="10" max="100" value="${m.focus}" oninput="updateMember(${i},'focus',this.value)" /></div>`:''}
-      <div style="padding-top:1.25rem;"><button class="btn-danger" onclick="removeMember(${i})">${t('lbl-remove')}</button></div>
+      <div style="flex:1;min-width:120px;"><label class="lbl" for="member-name-${i}">${t('lbl-name')}</label><input id="member-name-${i}" type="text" value="${escHtml(m.name)}" placeholder="${t('placeholder-name')}" oninput="updateMember(${i},'name',this.value)" /></div>
+      <div style="width:95px;"><label class="lbl" for="member-empl-${i}">${t('lbl-employment')}</label><input id="member-empl-${i}" type="number" min="10" max="100" step="5" value="${m.employment??100}" oninput="updateMember(${i},'employment',this.value)" /></div>
+      <div style="width:95px;"><label class="lbl" for="member-alloc-${i}">${t('lbl-allocation')}</label><input id="member-alloc-${i}" type="number" min="10" max="100" step="5" value="${m.allocation??100}" oninput="updateMember(${i},'allocation',this.value)" /></div>
+      <div style="width:85px;"><label class="lbl" for="member-absence-${i}">${t('lbl-absence')}</label><input id="member-absence-${i}" type="number" min="0" max="60" step="0.5" value="${m.absence}" oninput="updateMember(${i},'absence',this.value)" /></div>
+      ${mode==='individual'?`<div style="width:78px;"><label class="lbl" for="member-focus-${i}">${t('lbl-focus-ind')}</label><input id="member-focus-${i}" type="number" min="10" max="100" value="${m.focus}" oninput="updateMember(${i},'focus',this.value)" /></div>`:''}
+      <div style="padding-top:1.25rem;"><button type="button" class="btn-danger" onclick="removeMember(${i})" aria-label="${t('lbl-remove')} ${escHtml(m.name)||String(i+1)}">${t('lbl-remove')}</button></div>
       <div style="width:100%;border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.1rem;display:flex;flex-wrap:wrap;align-items:flex-end;gap:.4rem;">
         <span class="lbl" style="margin:0;font-weight:500;width:100%;">${t('lbl-disciplines')}</span>
         ${(m.disciplines||[]).map((d,di)=>{
           const bg=discColor(d.name);
           const r=parseInt(bg.slice(1,3),16),g=parseInt(bg.slice(3,5),16),b=parseInt(bg.slice(5,7),16);
           const light=`rgba(${r},${g},${b},.13)`,border=`rgba(${r},${g},${b},.35)`,xbg=`rgba(${r},${g},${b},.22)`;
-          return `<span class="disc-chip" style="background:${light};color:${bg};border-color:${border};">${escHtml(d.name)}&ensp;<span style="font-variant-numeric:tabular-nums;opacity:.8;">${d.pct}%</span><button class="disc-chip-x" onclick="removeDiscipline(${i},${di})" style="background:${xbg};color:${bg};margin-left:.1rem;" title="Remove">&times;</button></span>`;
+          return `<span class="disc-chip" style="background:${light};color:${bg};border-color:${border};">${escHtml(d.name)}&ensp;<span style="font-variant-numeric:tabular-nums;opacity:.8;">${escHtml(String(d.pct))}%</span><button type="button" class="disc-chip-x" onclick="removeDiscipline(${i},${di})" style="background:${xbg};color:${bg};margin-left:.1rem;" aria-label="Remove ${escHtml(d.name)}">&times;</button></span>`;
         }).join('')}
         <input type="text" id="disc-name-${i}" list="disc-suggestions" placeholder="${t('disc-placeholder')}" style="width:220px;flex-shrink:0;" />
         <input type="number" id="disc-pct-${i}" min="1" max="100" step="5" value="100" style="width:72px;flex-shrink:0;" />
-        <button class="btn-outline" style="font-size:.7rem;padding:.2rem .5rem;flex-shrink:0;" onclick="addDiscipline(${i})">+ ${t('disc-add')}</button>
+        <button type="button" class="btn-outline" style="font-size:.7rem;padding:.2rem .5rem;flex-shrink:0;" onclick="addDiscipline(${i})">+ ${t('disc-add')}</button>
         ${discWarn?`<span style="font-size:.7rem;color:#ef4444;">${t('disc-warn').replace('{0}',discTotal)}</span>`:''}
       </div>
     </div>`;
@@ -576,21 +592,11 @@ function addDiscipline(mi){
   renderTeam();saveState();
 }
 function removeDiscipline(mi,di){members[mi].disciplines.splice(di,1);renderTeam();saveState();}
-// Capacity formula:
-// availableDays = (sprintDays - totalHolidays - absenceDays) x (employment/100) x (allocation/100)
-// capacityDays  = availableDays x (focus/100)
-// usDays        = capacityDays x (sprintScope/100)   → for planned user stories
-// bufferDays    = capacityDays x (1 - sprintScope/100) → fastlane / spontaneous
-function calculate(){
-  if(!members.length){ alert(t('alert-no-members')); return; }
-  const sprintDays=parseFloat(document.getElementById('sprintDays').value)||10;
-  const hoursPerDay=parseFloat(document.getElementById('hoursPerDay').value)||8;
-  const globalFocus=(parseFloat(document.getElementById('focusFactor').value)||70)/100;
-  const sprintScope=(parseFloat(document.getElementById('sprintScope').value)||70)/100;
-  const mode=document.getElementById('focusMode').value;
-  const totalHolidays=holidays.reduce((s,h)=>s+h.days,0);
-  const sprintName=document.getElementById('sprintName').value||'Sprint';
-  const rows=members.map(m=>{
+// Pure capacity computation — no DOM, no side effects
+function computeCapacity(membersArr,holidaysArr,settings){
+  const{sprintDays,hoursPerDay,globalFocus,sprintScope,mode,sprintName,unnamedLabel}=settings;
+  const totalHolidays=holidaysArr.reduce((s,h)=>s+h.days,0);
+  const rows=membersArr.map(m=>{
     const empl=(m.employment??100)/100;
     const alloc=(m.allocation??100)/100;
     const focus=mode==='individual'?(m.focus/100):globalFocus;
@@ -601,7 +607,7 @@ function calculate(){
     const capHours=Math.round(capDays*hoursPerDay*100)/100;
     const scopeDays=Math.round(capDays*sprintScope*100)/100;
     const scopeHours=Math.round(capHours*sprintScope*100)/100;
-    return {name:m.name||t('unnamed'),employment:Math.round(empl*100),allocation:Math.round(alloc*100),absence:m.absence,holidays:totalHolidays,available,focus:Math.round(focus*100),capDays,capHours,scopeDays,scopeHours};
+    return {name:m.name||unnamedLabel||'Unnamed',employment:Math.round(empl*100),allocation:Math.round(alloc*100),absence:m.absence,holidays:totalHolidays,available,focus:Math.round(focus*100),capDays,capHours,scopeDays,scopeHours};
   });
   const totalDays=Math.round(rows.reduce((s,r)=>s+r.capDays,0)*100)/100;
   const totalHours=Math.round(rows.reduce((s,r)=>s+r.capHours,0)*100)/100;
@@ -610,9 +616,8 @@ function calculate(){
   const bufferDays=Math.round((totalDays-usDays)*100)/100;
   const bufferHours=Math.round((totalHours-usHours)*100)/100;
   const scopePct=Math.round(sprintScope*100);
-  // ── Discipline aggregation ──
   const byDisc={};
-  members.forEach((m,mi)=>{
+  membersArr.forEach((m,mi)=>{
     const discs=m.disciplines||[];
     if(!discs.length)return;
     const tot=discs.reduce((s,d)=>s+d.pct,0)||100;
@@ -623,6 +628,28 @@ function calculate(){
     });
   });
   const discEntries=Object.entries(byDisc).sort((a,b)=>b[1].days-a[1].days);
+  return {rows,totalDays,totalHours,usDays,usHours,bufferDays,bufferHours,scopePct,discEntries,sprintName,sprintDays,totalHolidays};
+}
+function calculate(){
+  const errEl=document.getElementById('calc-error');
+  if(errEl)errEl.style.display='none';
+  if(!members.length){
+    if(errEl){errEl.textContent=t('alert-no-members');errEl.style.display='';}
+    return;
+  }
+  const settings={
+    sprintDays:parseFloat(document.getElementById('sprintDays').value)||10,
+    hoursPerDay:parseFloat(document.getElementById('hoursPerDay').value)||8,
+    globalFocus:(parseFloat(document.getElementById('focusFactor').value)||70)/100,
+    sprintScope:(parseFloat(document.getElementById('sprintScope').value)||70)/100,
+    mode:document.getElementById('focusMode').value,
+    sprintName:document.getElementById('sprintName').value||'Sprint',
+    unnamedLabel:t('unnamed')
+  };
+  const result=computeCapacity(members,holidays,settings);
+  _lastResult=result;
+  const{rows,totalDays,totalHours,usDays,usHours,bufferDays,bufferHours,scopePct,discEntries,sprintDays,totalHolidays,sprintName}=result;
+  const sprintScope=settings.sprintScope;
   document.getElementById('result-sprint-name').textContent=sprintName;
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   const cardDefs=[
@@ -661,7 +688,6 @@ function calculate(){
       <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#1e40af;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${usHours}')">${usHours}</td>
     </tr>`;
   document.getElementById('result-formula-hint').textContent=t('formula-hint');
-  // ── Budget split bar ──
   const barW=Math.round(sprintScope*100);
   document.getElementById('split-section').style.display='';
   document.getElementById('split-title').textContent=t('t-split-title');
@@ -673,20 +699,22 @@ function calculate(){
   document.getElementById('split-bar-buffer').style.width=(100-barW)+'%';
   document.getElementById('results-section').style.display='';
   document.getElementById('results-section').scrollIntoView({behavior:'smooth',block:'start'});
-  // ── Discipline section ──
   if(discEntries.length){
     document.getElementById('discipline-section').style.display='';
     document.getElementById('disc-section-title').textContent=t('t-disc-title');
-    document.getElementById('disc-table-wrap').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.5rem;">'+discEntries.map(([name,d])=>`<div style="border-radius:.75rem;border:1px solid var(--border);padding:.75rem;display:flex;align-items:center;gap:.6rem;"><div style="width:.6rem;height:2.5rem;border-radius:.25rem;background:${discColor(name)};flex-shrink:0;"></div><div style="min-width:0;"><div style="font-size:.7rem;color:var(--text-3);margin-bottom:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(name)}">${escHtml(name)}</div><div class="copy-cell" style="font-weight:700;color:var(--text-1);font-size:1.05rem;" onclick="copySingle('${d.days}')">${d.days}d</div><div class="copy-cell" style="font-size:.75rem;color:var(--text-3);" onclick="copySingle('${d.hours}')">${d.hours}h</div></div></div>`).join('')+'</div>';
+    document.getElementById('disc-table-wrap').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.5rem;">'+discEntries.map(([name,d])=>`<div style="border-radius:.75rem;border:1px solid var(--border);padding:.75rem;display:flex;align-items:center;gap:.6rem;"><div style="width:.6rem;height:2.5rem;border-radius:.25rem;background:${discColor(name)};flex-shrink:0;" aria-hidden="true"></div><div style="min-width:0;"><div style="font-size:.7rem;color:var(--text-3);margin-bottom:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(name)}">${escHtml(name)}</div><div class="copy-cell" style="font-weight:700;color:var(--text-1);font-size:1.05rem;" onclick="copySingle('${d.days}')">${d.days}d</div><div class="copy-cell" style="font-size:.75rem;color:var(--text-3);" onclick="copySingle('${d.hours}')">${d.hours}h</div></div></div>`).join('')+'</div>';
   }else{
     document.getElementById('discipline-section').style.display='none';
   }
-  window._lastResult={rows,totalDays,totalHours,usDays,usHours,bufferDays,bufferHours,scopePct,discEntries,sprintName,sprintDays,totalHolidays};
+  document.querySelectorAll('.copy-cell').forEach(el=>{
+    if(!el.getAttribute('tabindex'))el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role'))el.setAttribute('role','button');
+  });
   saveState();
 }
 function copySingle(v){ copyToClipboard(String(v)); }
 function buildMarkdown(){
-  const r=window._lastResult; if(!r) return '';
+  const r=_lastResult; if(!r) return '';
   const cols=[t('t-col-name'),t('t-col-employ'),t('t-col-alloc'),t('t-col-absence'),t('t-col-holidays'),t('t-col-available'),t('t-col-focus'),t('t-col-cap-days'),t('t-col-cap-hours')];
   let md='## '+(lang==='de'?'Sprint Kapazitäten':'Sprint Capacity')+': '+r.sprintName+'\n\n';
   md+='| '+cols.join(' | ')+' |\n';
@@ -707,7 +735,7 @@ function buildMarkdown(){
   return md;
 }
 function buildPlainText(){
-  const r=window._lastResult; if(!r) return '';
+  const r=_lastResult; if(!r) return '';
   const p=(s,n)=>String(s).padEnd(n), rp=(s,n)=>String(s).padStart(n), ln='-'.repeat(80);
   let txt=(lang==='de'?'Sprint Kapazitäten':'Sprint Capacity')+': '+r.sprintName+'\n'+ln+'\n';
   txt+=p('Name',16)+rp('Empl',7)+rp('Alloc',7)+rp('Abs',6)+rp('Hols',6)+rp('Avail',8)+rp('Focus',7)+rp('Cap.d',8)+rp('Cap.h',8)+rp('Story.d',9)+rp('Story.h',9)+'\n'+ln+'\n';
@@ -786,8 +814,13 @@ if(!members.length) members=[{name:'',employment:100,allocation:100,absence:0,fo
 renderTeam();
 renderHolidays();
 loadDachHolidays();
+document.querySelectorAll('svg').forEach(s=>s.setAttribute('aria-hidden','true'));
 document.addEventListener('input',saveState);
 document.addEventListener('change',saveState);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeLangMenu();
+  if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('copy-cell')){e.preventDefault();e.target.click();}
+});
 </script>
 </body>
 </html>

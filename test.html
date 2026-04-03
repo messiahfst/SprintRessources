@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sprint Resource Planner — Unit Tests</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    .pass { color: #16a34a; } .fail { color: #ef4444; }
+    table { border-collapse: collapse; width: 100%; font-size: .875rem; margin-top: 1rem; }
+    th, td { border: 1px solid #e5e7eb; padding: .4rem .75rem; text-align: left; }
+    th { background: #f1f5f9; }
+    #summary { font-weight: 700; margin-top: 1rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+<h1>Sprint Resource Planner — Unit Tests (computeCapacity)</h1>
+<div id="summary"></div>
+<table>
+  <thead><tr><th>#</th><th>Test</th><th>Expected</th><th>Got</th><th>Status</th></tr></thead>
+  <tbody id="results"></tbody>
+</table>
+
+<script>
+// ── Copy of computeCapacity from index.html ──────────────────────────────────
+function computeCapacity(membersArr,holidaysArr,settings){
+  const{sprintDays,hoursPerDay,globalFocus,sprintScope,mode,sprintName,unnamedLabel}=settings;
+  const totalHolidays=holidaysArr.reduce((s,h)=>s+h.days,0);
+  const rows=membersArr.map(m=>{
+    const empl=(m.employment??100)/100;
+    const alloc=(m.allocation??100)/100;
+    const focus=mode==='individual'?(m.focus/100):globalFocus;
+    const factor=empl*alloc;
+    const availRaw=Math.max(0,sprintDays-totalHolidays-m.absence);
+    const available=Math.round(availRaw*factor*100)/100;
+    const capDays=Math.round(available*focus*100)/100;
+    const capHours=Math.round(capDays*hoursPerDay*100)/100;
+    const scopeDays=Math.round(capDays*sprintScope*100)/100;
+    const scopeHours=Math.round(capHours*sprintScope*100)/100;
+    return {name:m.name||unnamedLabel||'Unnamed',employment:Math.round(empl*100),allocation:Math.round(alloc*100),absence:m.absence,holidays:totalHolidays,available,focus:Math.round(focus*100),capDays,capHours,scopeDays,scopeHours};
+  });
+  const totalDays=Math.round(rows.reduce((s,r)=>s+r.capDays,0)*100)/100;
+  const totalHours=Math.round(rows.reduce((s,r)=>s+r.capHours,0)*100)/100;
+  const usDays=Math.round(totalDays*sprintScope*100)/100;
+  const usHours=Math.round(totalHours*sprintScope*100)/100;
+  const bufferDays=Math.round((totalDays-usDays)*100)/100;
+  const bufferHours=Math.round((totalHours-usHours)*100)/100;
+  const scopePct=Math.round(sprintScope*100);
+  const byDisc={};
+  membersArr.forEach((m,mi)=>{
+    const discs=m.disciplines||[];
+    if(!discs.length)return;
+    const tot=discs.reduce((s,d)=>s+d.pct,0)||100;
+    discs.forEach(d=>{
+      if(!byDisc[d.name])byDisc[d.name]={days:0,hours:0};
+      byDisc[d.name].days =Math.round((byDisc[d.name].days +rows[mi].capDays *sprintScope*(d.pct/tot))*100)/100;
+      byDisc[d.name].hours=Math.round((byDisc[d.name].hours+rows[mi].capHours*sprintScope*(d.pct/tot))*100)/100;
+    });
+  });
+  const discEntries=Object.entries(byDisc).sort((a,b)=>b[1].days-a[1].days);
+  return {rows,totalDays,totalHours,usDays,usHours,bufferDays,bufferHours,scopePct,discEntries,sprintName,sprintDays,totalHolidays};
+}
+
+// ── Test runner ───────────────────────────────────────────────────────────────
+const tests = [];
+function assert(name, expected, actual) {
+  tests.push({ name, expected, actual, pass: String(expected) === String(actual) });
+}
+
+// ── BASE SETTINGS ─────────────────────────────────────────────────────────────
+const base = { sprintDays:10, hoursPerDay:8, globalFocus:0.7, sprintScope:0.7, mode:'global', sprintName:'T1', unnamedLabel:'Unnamed' };
+
+// ── T1: Full-time member, no holidays, no absence ────────────────────────────
+// Available = (10 - 0 - 0) × 1.0 × 1.0 = 10
+// Capacity  = 10 × 0.7 = 7d / 56h
+// Story     = 7 × 0.7 = 4.9d / 39.2h
+{
+  const r = computeCapacity(
+    [{name:'Alice',employment:100,allocation:100,absence:0,focus:70,disciplines:[]}],
+    [], base
+  );
+  assert('T1 available', 10,   r.rows[0].available);
+  assert('T1 capDays',    7,   r.rows[0].capDays);
+  assert('T1 capHours',  56,   r.rows[0].capHours);
+  assert('T1 scopeDays', 4.9,  r.rows[0].scopeDays);
+  assert('T1 scopeHours',39.2, r.rows[0].scopeHours);
+}
+
+// ── T2: 80% employment, 50% allocation ───────────────────────────────────────
+// Available = 10 × 0.8 × 0.5 = 4
+// Capacity  = 4 × 0.7 = 2.8d / 22.4h
+{
+  const r = computeCapacity(
+    [{name:'Bob',employment:80,allocation:50,absence:0,focus:70,disciplines:[]}],
+    [], base
+  );
+  assert('T2 available', 4,    r.rows[0].available);
+  assert('T2 capDays',   2.8,  r.rows[0].capDays);
+  assert('T2 capHours',  22.4, r.rows[0].capHours);
+}
+
+// ── T3: Holiday deduction ────────────────────────────────────────────────────
+// Available = (10 - 1 - 0) × 1.0 = 9
+// Capacity  = 9 × 0.7 = 6.3d
+{
+  const r = computeCapacity(
+    [{name:'Carol',employment:100,allocation:100,absence:0,focus:70,disciplines:[]}],
+    [{name:'Easter',days:1}], base
+  );
+  assert('T3 totalHolidays', 1,   r.totalHolidays);
+  assert('T3 available',     9,   r.rows[0].available);
+  assert('T3 capDays',       6.3, r.rows[0].capDays);
+}
+
+// ── T4: Absence deduction ────────────────────────────────────────────────────
+// Available = (10 - 0 - 2) × 1.0 = 8
+// Capacity  = 8 × 0.7 = 5.6d
+{
+  const r = computeCapacity(
+    [{name:'Dave',employment:100,allocation:100,absence:2,focus:70,disciplines:[]}],
+    [], base
+  );
+  assert('T4 available', 8,   r.rows[0].available);
+  assert('T4 capDays',   5.6, r.rows[0].capDays);
+}
+
+// ── T5: Absence > SprintDays → clamp to 0 ───────────────────────────────────
+{
+  const r = computeCapacity(
+    [{name:'Eve',employment:100,allocation:100,absence:15,focus:70,disciplines:[]}],
+    [], base
+  );
+  assert('T5 available clamp', 0, r.rows[0].available);
+  assert('T5 capDays clamp',   0, r.rows[0].capDays);
+}
+
+// ── T6: Individual focus mode ────────────────────────────────────────────────
+// Person has focus=50% (not global 70%)
+// Available = 10, Capacity = 10 × 0.5 = 5d
+{
+  const r = computeCapacity(
+    [{name:'Frank',employment:100,allocation:100,absence:0,focus:50,disciplines:[]}],
+    [], { ...base, mode:'individual' }
+  );
+  assert('T6 individual focus capDays', 5, r.rows[0].capDays);
+}
+
+// ── T7: sprintScope / buffer split ──────────────────────────────────────────
+// totalDays=7, scope=70% → usDays=4.9, buffer=2.1
+{
+  const r = computeCapacity(
+    [{name:'Alice',employment:100,allocation:100,absence:0,focus:70,disciplines:[]}],
+    [], base
+  );
+  assert('T7 usDays',     4.9, r.usDays);
+  assert('T7 bufferDays', 2.1, r.bufferDays);
+  assert('T7 scopePct',   70,  r.scopePct);
+}
+
+// ── T8: Two members — totalDays sums correctly ───────────────────────────────
+// Alice: 7d, Bob: 7d → total 14d
+{
+  const r = computeCapacity(
+    [
+      {name:'Alice',employment:100,allocation:100,absence:0,focus:70,disciplines:[]},
+      {name:'Bob',  employment:100,allocation:100,absence:0,focus:70,disciplines:[]}
+    ],
+    [], base
+  );
+  assert('T8 totalDays',  14, r.totalDays);
+  assert('T8 totalHours', 112, r.totalHours);
+}
+
+// ── T9: Discipline breakdown ─────────────────────────────────────────────────
+// Alice: capDays=7, scope=70% → storyDays=4.9
+// BE 60%: 4.9×0.6=2.94  QA 40%: 4.9×0.4=1.96
+{
+  const r = computeCapacity(
+    [{name:'Alice',employment:100,allocation:100,absence:0,focus:70,disciplines:[{name:'BE',pct:60},{name:'QA',pct:40}]}],
+    [], base
+  );
+  const be = r.discEntries.find(([n])=>n==='BE');
+  const qa = r.discEntries.find(([n])=>n==='QA');
+  assert('T9 BE days',  2.94, be && be[1].days);
+  assert('T9 QA days',  1.96, qa && qa[1].days);
+}
+
+// ── T10: No members → empty result ───────────────────────────────────────────
+{
+  const r = computeCapacity([], [], base);
+  assert('T10 empty totalDays',  0, r.totalDays);
+  assert('T10 empty rows length',0, r.rows.length);
+}
+
+// ── Render results ────────────────────────────────────────────────────────────
+const tbody = document.getElementById('results');
+let pass = 0, fail = 0;
+tests.forEach((t, i) => {
+  t.pass ? pass++ : fail++;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${i+1}</td><td>${t.name}</td><td>${t.expected}</td><td>${t.actual}</td><td class="${t.pass?'pass':'fail'}">${t.pass?'PASS':'FAIL'}</td>`;
+  tbody.appendChild(tr);
+});
+document.getElementById('summary').textContent =
+  `${pass} / ${tests.length} tests passed${fail?' — '+fail+' FAILED':''}`;
+document.getElementById('summary').className = fail ? 'fail' : 'pass';
+</script>
+</body>
+</html>
