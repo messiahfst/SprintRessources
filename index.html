@@ -661,18 +661,33 @@ async function loadDachHolidays(){
   _dachLoaded=true;
   const content=document.getElementById('dach-ref-content');
   if(!content)return;
-  const cnames={en:{DE:'Germany',AT:'Austria',CH:'Switzerland',FR:'France',BE:'Belgium',IT:'Italy',ES:'Spain'},de:{DE:'Deutschland',AT:'Österreich',CH:'Schweiz',FR:'Frankreich',BE:'Belgien',IT:'Italien',ES:'Spanien'},fr:{DE:'Allemagne',AT:'Autriche',CH:'Suisse',FR:'France',BE:'Belgique',IT:'Italie',ES:'Espagne'},it:{DE:'Germania',AT:'Austria',CH:'Svizzera',FR:'Francia',BE:'Belgio',IT:'Italia',ES:'Spagna'},es:{DE:'Alemania',AT:'Austria',CH:'Suiza',FR:'Francia',BE:'Bélgica',IT:'Italia',ES:'España'},ch:{DE:'Dütschland',AT:'Öschterrich',CH:'Schwiiz',FR:'Frankriich',BE:'Belgie',IT:'Italie',ES:'Schpanie'}};
-  const cflags={DE:'🇩🇪',AT:'🇦🇹',CH:'🇨🇭',FR:'🇫🇷',BE:'🇧🇪',IT:'🇮🇹',ES:'🇪🇸'};
-  const langCodes={en:['DE','AT','CH'],de:['DE','AT','CH'],fr:['FR','BE','CH'],it:['IT','CH'],es:['ES'],ch:['DE','AT','CH']};
-  const codes=langCodes[lang]||['DE','AT','CH'];
+  const now=new Date();
+  const cnames={
+    en:{GB:'United Kingdom',IE:'Ireland',FR:'France',DE:'Germany',AT:'Austria',CH:'Switzerland',NL:'Netherlands',BE:'Belgium',LU:'Luxembourg',DK:'Denmark',SE:'Sweden',NO:'Norway',FI:'Finland',IT:'Italy',ES:'Spain',PT:'Portugal',GR:'Greece',PL:'Poland',CZ:'Czechia',SK:'Slovakia',HU:'Hungary',RO:'Romania',BG:'Bulgaria',HR:'Croatia',SI:'Slovenia',LT:'Lithuania',LV:'Latvia',EE:'Estonia',CY:'Cyprus'},
+    de:{GB:'Vereinigtes Königreich',IE:'Irland',FR:'Frankreich',DE:'Deutschland',AT:'Österreich',CH:'Schweiz',NL:'Niederlande',BE:'Belgien',LU:'Luxemburg',DK:'Dänemark',SE:'Schweden',NO:'Norwegen',FI:'Finnland',IT:'Italien',ES:'Spanien',PT:'Portugal',GR:'Griechenland',PL:'Polen',CZ:'Tschechien',SK:'Slowakei',HU:'Ungarn',RO:'Rumänien',BG:'Bulgarien',HR:'Kroatien',SI:'Slowenien',LT:'Litauen',LV:'Lettland',EE:'Estland',CY:'Zypern'},
+    fr:{GB:'Royaume-Uni',IE:'Irlande',FR:'France',DE:'Allemagne',AT:'Autriche',CH:'Suisse',NL:'Pays-Bas',BE:'Belgique',LU:'Luxembourg',DK:'Danemark',SE:'Suède',NO:'Norvège',FI:'Finlande',IT:'Italie',ES:'Espagne',PT:'Portugal',GR:'Grèce',PL:'Pologne',CZ:'Tchéquie',SK:'Slovaquie',HU:'Hongrie',RO:'Roumanie',BG:'Bulgarie',HR:'Croatie',SI:'Slovénie',LT:'Lituanie',LV:'Lettonie',EE:'Estonie',CY:'Chypre'},
+    it:{GB:'Regno Unito',IE:'Irlanda',FR:'Francia',DE:'Germania',AT:'Austria',CH:'Svizzera',NL:'Paesi Bassi',BE:'Belgio',LU:'Lussemburgo',DK:'Danimarca',SE:'Svezia',NO:'Norvegia',FI:'Finlandia',IT:'Italia',ES:'Spagna',PT:'Portogallo',GR:'Grecia',PL:'Polonia',CZ:'Cechia',SK:'Slovacchia',HU:'Ungheria',RO:'Romania',BG:'Bulgaria',HR:'Croazia',SI:'Slovenia',LT:'Lituania',LV:'Lettonia',EE:'Estonia',CY:'Cipro'},
+    es:{GB:'Reino Unido',IE:'Irlanda',FR:'Francia',DE:'Alemania',AT:'Austria',CH:'Suiza',NL:'Países Bajos',BE:'Bélgica',LU:'Luxemburgo',DK:'Dinamarca',SE:'Suecia',NO:'Noruega',FI:'Finlandia',IT:'Italia',ES:'España',PT:'Portugal',GR:'Grecia',PL:'Polonia',CZ:'Chequia',SK:'Eslovaquia',HU:'Hungría',RO:'Rumanía',BG:'Bulgaria',HR:'Croacia',SI:'Eslovenia',LT:'Lituania',LV:'Letonia',EE:'Estonia',CY:'Chipre'},
+    ch:{GB:'Grossbritannie',IE:'Irland',FR:'Frankriich',DE:'Dütschland',AT:'Öschterrich',CH:'Schwiiz',NL:'Niederlande',BE:'Belgie',LU:'Luxemburg',DK:'Dänemark',SE:'Schwede',NO:'Norwegä',FI:'Fiiland',IT:'Italie',ES:'Schpanie',PT:'Portugal',GR:'Griecheland',PL:'Polä',CZ:'Tschechie',SK:'Slowakei',HU:'Ungarä',RO:'Rumänige',BG:'Bulgarige',HR:'Kroasie',SI:'Slowenie',LT:'Litaue',LV:'Lettland',EE:'Estland',CY:'Zyprä'}
+  };
+  const cflags={GB:'🇬🇧',IE:'🇮🇪',FR:'🇫🇷',DE:'🇩🇪',AT:'🇦🇹',CH:'🇨🇭',NL:'🇳🇱',BE:'🇧🇪',LU:'🇱🇺',DK:'🇩🇰',SE:'🇸🇪',NO:'🇳🇴',FI:'🇫🇮',IT:'🇮🇹',ES:'🇪🇸',PT:'🇵🇹',GR:'🇬🇷',PL:'🇵🇱',CZ:'🇨🇿',SK:'🇸🇰',HU:'🇭🇺',RO:'🇷🇴',BG:'🇧🇬',HR:'🇭🇷',SI:'🇸🇮',LT:'🇱🇹',LV:'🇱🇻',EE:'🇪🇪',CY:'🇨🇾'};
+  const langCodes={
+    en:['GB','IE','FR','DE','AT','CH','NL','BE','LU','DK','SE','NO','FI','IT','ES','PT','GR','PL','CZ','SK','HU','RO','BG','HR','SI','LT','LV','EE','CY'],
+    de:['DE','AT','CH'],
+    fr:['FR','BE','CH','LU'],
+    it:['IT','CH'],
+    es:['ES'],
+    ch:['DE','AT','CH']
+  };
+  const codes=langCodes[lang]||['GB','IE','FR','DE','AT','CH','NL','BE','LU','DK','SE','NO','FI','IT','ES','PT','GR'];
   const titleEl=document.getElementById('t-dach-ref-title');
-  if(titleEl) titleEl.textContent=codes.map(c=>cflags[c]).join(' ')+' '+t('t-dach-ref-title');
+  if(titleEl) titleEl.textContent=(codes.length>5?'🌍 ':codes.map(c=>cflags[c]).join(' ')+' ')+t('t-dach-ref-title');
   const end=new Date(now); end.setMonth(end.getMonth()+3);
   const years=[...new Set([now.getFullYear(),end.getFullYear()])];
   try{
     const grouped=Object.fromEntries(codes.map(c=>[c,[]]));
     const ctrl=new AbortController();
-    const tid=setTimeout(()=>ctrl.abort(),5000);
+    const tid=setTimeout(()=>ctrl.abort(),10000);
     const requests=codes.flatMap(code=>years.map(year=>
       fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code,{signal:ctrl.signal})
         .then(r=>r.ok?r.json().then(d=>({code,data:d})):null)
