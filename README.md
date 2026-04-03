@@ -56,7 +56,42 @@ The formula is shown inline in the app via the collapsible **"How the Formula Wo
 
 ## Changelog
 
-### v1.2.0 — 2026-03-26
+### [v1.3.0](https://github.com/messiahfst/SprintRessources/releases/tag/v1.3.0) — 2026-04-03
+
+**Security**
+- Added `Content-Security-Policy` meta tag (restricts scripts, styles, fetch to known origins)
+- `loadState()` now sanitizes all member/holiday fields from localStorage (XSS root-cause fix)
+- `rel="noopener noreferrer"` on all external links
+- Removed Tailwind Play CDN — no external script dependencies; CSS inlined
+
+**Performance**
+- DACH API requests now run in parallel via `Promise.allSettled` (up to 6× faster)
+- `loadDachHolidays()` respects a 5 s `AbortController` timeout per batch
+- `saveState()` debounced (300 ms) — no more JSON.stringify on every keystroke
+
+**Accessibility (WCAG 2.1)**
+- All form labels now have correct `for`/`id` pairs (static + dynamic)
+- Toast notification: `role="status"`, `aria-live="polite"`, `aria-atomic="true"`
+- Copy-cells in the results table are keyboard-accessible (Enter / Space)
+- Error message on missing team members: inline `role="alert"` instead of `alert()`
+- Toggle buttons (DACH holidays, formula box): `aria-expanded` synced dynamically
+- Language picker: `role="menu"` / `role="menuitem"` / `aria-haspopup` / `aria-expanded`; closes on Escape
+- All decorative SVGs: `aria-hidden="true"`
+- Remove buttons (holidays, discipline chips): descriptive `aria-label`
+- `focus-visible` outlines on all buttons and copy-cells
+
+**Code quality**
+- `computeCapacity()` extracted as a pure, side-effect-free function
+- `window._lastResult` / `window._dachLoaded` replaced with module-level `let`
+- `buildMarkdown()` / `buildPlainText()` use local `_lastResult`
+
+**DevOps**
+- Added `.github/workflows/release.yml` — pushing a `v*.*.*` tag auto-creates a GitHub Release with `index.html` as download asset
+
+**QA**
+- Added `test.html` — 25 unit tests for the core capacity formula (open in browser to run)
+
+### [v1.2.0](https://github.com/messiahfst/SprintRessources/releases/tag/v1.2.0) — 2026-03-26
 - Added collapsible **formula info box** in the results section
 - Added **DACH holiday reference** with live API data for DE / AT / CH (next 3 months)
 
