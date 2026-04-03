@@ -22,14 +22,14 @@ No installation, no npm, no server required.
 - **Sprint settings** — name, weeks × days/week, hours/day, focus factor (global or per person)
 - **User Story Budget %** — splits capacity into planned scope vs. fastlane/buffer
 - **Public holidays** — manual entry, deducted proportionally per person
-- **DACH holiday reference** — auto-loads public holidays for 🇩🇪 Germany, 🇦🇹 Austria and 🇨🇭 Switzerland for the next 3 months (via [date.nager.at](https://date.nager.at)); one click to add any entry to the sprint
+- **European holiday reference** — auto-loads public holidays for the next 3 months via [date.nager.at](https://date.nager.at); countries shown depend on the active language (🇬🇧 English = all 29 EU/European countries, 🇩🇪 German = DACH, 🇫🇷 French = FR/BE/CH/LU, 🇮🇹 Italian = IT/CH, 🇪🇸 Spanish = ES); one click to add any entry to the sprint
 - **Team members** — Employment %, Allocation %, Absence days, individual Focus %
 - **Disciplines** per person (e.g. Backend 60% / QA 40%) — capacity breakdown by discipline in results
 - **Results table** — Available(d), Cap(d/h), Story Cap(d/h) without buffer, per person
 - **Formula info box** — collapsible step-by-step explanation of the capacity calculation
 - **Visual budget split bar** — User Stories vs. Fastlane/Buffer
 - **Export** — Copy as Markdown or Plain Text
-- **DE / EN** language switcher · **Dark mode** · **localStorage** persistence
+- **6 languages** — 🇬🇧 EN · 🇩🇪 DE · 🇫🇷 FR · 🇮🇹 IT · 🇪🇸 ES · 🏙️ Schaffhuserdütsch (Easter Egg) · **Dark mode** · **localStorage** persistence
 
 ---
 
@@ -55,6 +55,24 @@ The formula is shown inline in the app via the collapsible **"How the Formula Wo
 ---
 
 ## Changelog
+
+### v1.5.0 — 2026-04-03
+
+**Holiday Reference: Language-based European Country Filtering**
+- Bug fix: `now` variable was undefined in `loadDachHolidays()` → ReferenceError → holidays never loaded
+- English now shows all 29 European countries (universal fallback)  
+- Languages map to their countries: DE→DACH, FR→FR/BE/CH/LU, IT→IT/CH, ES→ES
+- `cnames` / `cflags` expanded to cover all 29 European countries in all 6 languages
+- Title shows 🌍 globe icon for EN (>5 countries), otherwise country flags
+- `AbortController` timeout raised from 5 s to 10 s (handles 58 parallel requests for EN)
+
+**i18n: Schaffhuserdütsch Easter Egg**
+- Dialect rewritten from generic Schwiizerdütsch to authentic Schaffhauser Mundart
+- Key changes: Feiertäg→Fiiertäg, hinzuefüege→aalege, Sprooch→Sproch, nöächschti→nächschti, merci vilmol→danke villmol, Ostermäntig→Oschtrementig, Ewägmache→Wegneh
+- Unlock toast updated: *"Grüezi us Schaffhuse!"*
+- Menu label: 🇨🇭 Schwiizerdütsch → 🏙️ Schaffhuserdütsch
+
+---
 
 ### [v1.4.0](https://github.com/messiahfst/SprintRessources/releases/tag/v1.4.0) — 2025-07-10
 
