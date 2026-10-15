@@ -158,7 +158,7 @@
       <div id="holiday-list" style="display:flex;flex-wrap:wrap;gap:.25rem;min-height:1.5rem;"></div>
       <div id="holiday-input-wrap" style="display:none;flex-wrap:wrap;gap:.5rem;margin-top:.5rem;align-items:flex-end;">
         <div><label class="lbl" for="holiday-name-input" id="t-holiday-name-lbl">Name</label><input type="text" id="holiday-name-input" style="width:160px;" /></div>
-        <div><label class="lbl" for="holiday-days-input" id="t-holiday-days-lbl">Days</label><input type="number" id="holiday-days-input" style="width:72px;" min="0.5" max="5" step="0.5" value="1" /></div>
+        <div><label class="lbl" for="holiday-days-input" id="t-holiday-days-lbl">Days</label><input type="number" id="holiday-days-input" style="width:72px;" min="0.5" max="14" step="0.5" value="1" /></div>
         <button class="btn-primary" style="font-size:.75rem;padding:.375rem .75rem;" onclick="confirmHoliday()" id="t-confirm-holiday">Add</button>
         <button class="btn-secondary" style="font-size:.75rem;padding:.375rem .75rem;" onclick="cancelHoliday()" id="t-cancel">Cancel</button>
       </div>
@@ -631,7 +631,9 @@ const i18n = {
 let lang = localStorage.getItem('srp-lang') || 'en';
 let members = [], holidays = [];
 let _lastResult = null;
-let _dachLoaded = false;
+let _dachLoaded = false, _dachSeq = 0;
+const LIMITS={employment:{min:10,max:100,def:100},allocation:{min:10,max:100,def:100},absence:{min:0,max:60,def:0},focus:{min:10,max:100,def:70},holidayDays:{min:0.5,max:14,def:1},hoursPerDay:{min:1,max:24,def:8},focusFactor:{min:10,max:100,def:70},sprintScope:{min:10,max:100,def:70}};
+function clampNum(v,key){ const L=LIMITS[key], n=parseFloat(v); return Number.isFinite(n)?Math.min(L.max,Math.max(L.min,n)):L.def; }
 function t(k){ return (i18n[lang]&&i18n[lang][k])||i18n.en[k]||k; }
 function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); _dachLoaded=false; loadDachHolidays(); }
 function toggleDachRef(){
@@ -659,6 +661,7 @@ function addDachHoliday(name,days){
 async function loadDachHolidays(){
   if(_dachLoaded)return;
   _dachLoaded=true;
+  const seq=++_dachSeq;
   const content=document.getElementById('dach-ref-content');
   if(!content)return;
   const now=new Date();
@@ -695,6 +698,7 @@ async function loadDachHolidays(){
     ));
     const results=await Promise.allSettled(requests);
     clearTimeout(tid);
+    if(seq!==_dachSeq)return; // Sprache während des Ladens gewechselt
     results.forEach(r=>{
       if(r.status!=='fulfilled'||!r.value)return;
       const{code,data}=r.value;
@@ -732,6 +736,7 @@ async function loadDachHolidays(){
         +'</div>';
     }).join('');
   }catch(e){
+    if(seq!==_dachSeq)return;
     content.innerHTML='<span style="font-size:.75rem;color:#ef4444;">'+t('t-dach-error')+'</span>';
   }
 }
@@ -782,7 +787,7 @@ function addHoliday(){ document.getElementById('holiday-input-wrap').style.displ
 function cancelHoliday(){ document.getElementById('holiday-input-wrap').style.display='none'; document.getElementById('holiday-name-input').value=''; document.getElementById('holiday-days-input').value='1'; }
 function confirmHoliday(){
   const name=document.getElementById('holiday-name-input').value.trim();
-  const days=parseFloat(document.getElementById('holiday-days-input').value)||1;
+  const days=clampNum(document.getElementById('holiday-days-input').value,'holidayDays');
   if(!name) return;
   holidays.push({name,days}); cancelHoliday(); renderHolidays(); saveState();
 }
@@ -794,7 +799,7 @@ function renderHolidays(){
 }
 function addMember(){ members.push({name:'',employment:100,allocation:100,absence:0,focus:70,disciplines:[]}); renderTeam(); saveState(); }
 function removeMember(i){ members.splice(i,1); renderTeam(); saveState(); }
-function updateMember(i,field,value){ members[i][field]=field==='name'?value:(parseFloat(value)||0); saveState(); }
+function updateMember(i,field,value){ members[i][field]=field==='name'?value:clampNum(value,field); saveState(); }
 function renderTeam(){
   const list=document.getElementById('team-list');
   const mode=document.getElementById('focusMode').value;
@@ -885,9 +890,9 @@ function calculate(){
   }
   const settings={
     sprintDays:parseFloat(document.getElementById('sprintDays').value)||10,
-    hoursPerDay:parseFloat(document.getElementById('hoursPerDay').value)||8,
-    globalFocus:(parseFloat(document.getElementById('focusFactor').value)||70)/100,
-    sprintScope:(parseFloat(document.getElementById('sprintScope').value)||70)/100,
+    hoursPerDay:clampNum(document.getElementById('hoursPerDay').value,'hoursPerDay'),
+    globalFocus:clampNum(document.getElementById('focusFactor').value,'focusFactor')/100,
+    sprintScope:clampNum(document.getElementById('sprintScope').value,'sprintScope')/100,
     mode:document.getElementById('focusMode').value,
     sprintName:document.getElementById('sprintName').value||'Sprint',
     unnamedLabel:t('unnamed')
@@ -961,11 +966,12 @@ function calculate(){
 function copySingle(v){ copyToClipboard(String(v)); }
 function buildMarkdown(){
   const r=_lastResult; if(!r) return '';
-  const cols=[t('t-col-name'),t('t-col-employ'),t('t-col-alloc'),t('t-col-absence'),t('t-col-holidays'),t('t-col-available'),t('t-col-focus'),t('t-col-cap-days'),t('t-col-cap-hours')];
+  const cols=[t('t-col-name'),t('t-col-employ'),t('t-col-alloc'),t('t-col-absence'),t('t-col-holidays'),t('t-col-available'),t('t-col-focus'),t('t-col-cap-days'),t('t-col-cap-hours'),t('t-col-scope-days'),t('t-col-scope-hours')];
+  const mdc=v=>String(v).replace(/\\/g,'\\\\').replace(/\|/g,'\\|').replace(/[\r\n]+/g,' ');
   let md='## '+t('export-sprint-cap')+': '+r.sprintName+'\n\n';
   md+='| '+cols.join(' | ')+' |\n';
   md+='|'+cols.map(()=>'---').join('|')+'|\n';
-  r.rows.forEach(row=>{ md+='| '+row.name+' | '+row.employment+' | '+row.allocation+' | '+row.absence+' | '+row.holidays+' | '+row.available+' | '+row.focus+'% | '+row.capDays+' | '+row.capHours+' | **'+row.scopeDays+'** | **'+row.scopeHours+'** |\n'; });
+  r.rows.forEach(row=>{ md+='| '+mdc(row.name)+' | '+row.employment+' | '+row.allocation+' | '+row.absence+' | '+row.holidays+' | '+row.available+' | '+row.focus+'% | '+row.capDays+' | '+row.capHours+' | **'+row.scopeDays+'** | **'+row.scopeHours+'** |\n'; });
   md+='| **'+t('total')+'** | | | | | | | **'+r.totalDays+'** | **'+r.totalHours+'** | **'+r.usDays+'** | **'+r.usHours+'** |\n';
   md+='\n> '+t('export-sprint-days')+': '+r.sprintDays+' | '+t('export-holidays')+': '+r.totalHolidays+'\n\n';
   md+='### '+t('export-budget-split')+'\n';
@@ -976,7 +982,7 @@ function buildMarkdown(){
   if(r.discEntries&&r.discEntries.length){
     md+='\n\n### '+t('export-cap-by-disc')+'\n';
     md+='| '+t('export-discipline')+' | '+t('export-days')+' | '+t('export-hours')+'|\n|---|---|---|\n';
-    r.discEntries.forEach(([name,d])=>{ md+='| '+name+' | '+d.days+' | '+d.hours+' |\n'; });
+    r.discEntries.forEach(([name,d])=>{ md+='| '+mdc(name)+' | '+d.days+' | '+d.hours+' |\n'; });
   }
   return md;
 }
@@ -1028,16 +1034,16 @@ function loadState(){
     if(s.sprintName) document.getElementById('sprintName').value=s.sprintName;
     if(s.sprintWeeks) document.getElementById('sprintWeeks').value=s.sprintWeeks;
     if(s.workdaysPerWeek) document.getElementById('workdaysPerWeek').value=s.workdaysPerWeek;
-    if(s.hoursPerDay) document.getElementById('hoursPerDay').value=s.hoursPerDay;
+    if(s.hoursPerDay) document.getElementById('hoursPerDay').value=clampNum(s.hoursPerDay,'hoursPerDay');
     if(s.focusMode) document.getElementById('focusMode').value=s.focusMode;
-    if(s.focusFactor) document.getElementById('focusFactor').value=s.focusFactor;
-    if(s.sprintScope) document.getElementById('sprintScope').value=s.sprintScope;
+    if(s.focusFactor) document.getElementById('focusFactor').value=clampNum(s.focusFactor,'focusFactor');
+    if(s.sprintScope) document.getElementById('sprintScope').value=clampNum(s.sprintScope,'sprintScope');
     if(Array.isArray(s.members)) members=s.members.map(m=>({
       name:String(m.name||'').slice(0,100),
-      employment:Math.min(100,Math.max(0,parseFloat(m.employment)||100)),
-      allocation:Math.min(100,Math.max(0,parseFloat(m.allocation)||100)),
-      absence:Math.max(0,parseFloat(m.absence)||0),
-      focus:Math.min(100,Math.max(0,parseFloat(m.focus)||70)),
+      employment:clampNum(m.employment,'employment'),
+      allocation:clampNum(m.allocation,'allocation'),
+      absence:clampNum(m.absence,'absence'),
+      focus:clampNum(m.focus,'focus'),
       disciplines:Array.isArray(m.disciplines)?m.disciplines.map(d=>({
         name:String(d.name||'').slice(0,50),
         pct:Math.min(100,Math.max(0,parseFloat(d.pct)||0))
@@ -1045,9 +1051,9 @@ function loadState(){
     }));
     if(Array.isArray(s.holidays)) holidays=s.holidays.map(h=>({
       name:String(h.name||'').slice(0,100),
-      days:Math.min(14,Math.max(0.5,parseFloat(h.days)||1))
+      days:clampNum(h.days,'holidayDays')
     }));
-    if(s.lang){ lang=s.lang; if(s.lang==='ch') localStorage.setItem('srp-ch-unlocked','1'); }
+    if(s.lang&&Object.prototype.hasOwnProperty.call(i18n,s.lang)){ lang=s.lang; if(s.lang==='ch') localStorage.setItem('srp-ch-unlocked','1'); }
   }catch(e){}
 }
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
