@@ -628,11 +628,12 @@ const i18n = {
     "export-cap-by-disc":"Kapazität nach Disziplin","export-discipline":"Disziplin"
   }
 };
-let lang = localStorage.getItem('srp-lang') || 'en';
+let lang = localStorage.getItem('srp-lang');
+if(!lang||!Object.prototype.hasOwnProperty.call(i18n,lang)) lang='en';
 let members = [], holidays = [];
 let _lastResult = null;
 let _dachLoaded = false, _dachSeq = 0;
-const LIMITS={employment:{min:10,max:100,def:100},allocation:{min:10,max:100,def:100},absence:{min:0,max:60,def:0},focus:{min:10,max:100,def:70},holidayDays:{min:0.5,max:14,def:1},hoursPerDay:{min:1,max:24,def:8},focusFactor:{min:10,max:100,def:70},sprintScope:{min:10,max:100,def:70}};
+const LIMITS={employment:{min:10,max:100,def:100},allocation:{min:10,max:100,def:100},absence:{min:0,max:60,def:0},focus:{min:10,max:100,def:70},holidayDays:{min:0.5,max:14,def:1},hoursPerDay:{min:1,max:24,def:8},focusFactor:{min:10,max:100,def:70},sprintScope:{min:10,max:100,def:70},sprintWeeks:{min:1,max:8,def:2},sprintDays:{min:1,max:60,def:10},discPct:{min:1,max:100,def:0}};
 function clampNum(v,key){ const L=LIMITS[key], n=parseFloat(v); return Number.isFinite(n)?Math.min(L.max,Math.max(L.min,n)):L.def; }
 function t(k){ return (i18n[lang]&&i18n[lang][k])||i18n.en[k]||k; }
 function setLang(l){ lang=l; localStorage.setItem('srp-lang',l); applyLang(); renderTeam(); renderHolidays(); _dachLoaded=false; loadDachHolidays(); }
@@ -779,7 +780,7 @@ function applyTheme(){
   document.getElementById('icon-moon').style.display=s==='dark'?'none':'block';
 }
 function calcSprintDays(){
-  const w=parseFloat(document.getElementById('sprintWeeks').value)||2;
+  const w=clampNum(document.getElementById('sprintWeeks').value,'sprintWeeks');
   const p=parseFloat(document.getElementById('workdaysPerWeek').value)||5;
   document.getElementById('sprintDays').value=Math.round(w*p*10)/10;
 }
@@ -836,7 +837,7 @@ const DISC_COLORS=['#6366f1','#10b981','#f97316','#0ea5e9','#a855f7','#ec4899','
 function discColor(name){let h=0;for(const c of String(name))h=(h*31+c.charCodeAt(0))>>>0;return DISC_COLORS[h%DISC_COLORS.length];}
 function addDiscipline(mi){
   const n=document.getElementById('disc-name-'+mi).value.trim();
-  const p=parseFloat(document.getElementById('disc-pct-'+mi).value)||0;
+  const p=clampNum(document.getElementById('disc-pct-'+mi).value,'discPct');
   if(!n||p<=0)return;
   if(!members[mi].disciplines)members[mi].disciplines=[];
   members[mi].disciplines.push({name:n,pct:p});
@@ -889,7 +890,7 @@ function calculate(){
     return;
   }
   const settings={
-    sprintDays:parseFloat(document.getElementById('sprintDays').value)||10,
+    sprintDays:clampNum(document.getElementById('sprintDays').value,'sprintDays'),
     hoursPerDay:clampNum(document.getElementById('hoursPerDay').value,'hoursPerDay'),
     globalFocus:clampNum(document.getElementById('focusFactor').value,'focusFactor')/100,
     sprintScope:clampNum(document.getElementById('sprintScope').value,'sprintScope')/100,
@@ -1032,7 +1033,7 @@ function loadState(){
   try{
     const s=JSON.parse(localStorage.getItem('srp-state')||'null'); if(!s) return;
     if(s.sprintName) document.getElementById('sprintName').value=s.sprintName;
-    if(s.sprintWeeks) document.getElementById('sprintWeeks').value=s.sprintWeeks;
+    if(s.sprintWeeks) document.getElementById('sprintWeeks').value=clampNum(s.sprintWeeks,'sprintWeeks');
     if(s.workdaysPerWeek) document.getElementById('workdaysPerWeek').value=s.workdaysPerWeek;
     if(s.hoursPerDay) document.getElementById('hoursPerDay').value=clampNum(s.hoursPerDay,'hoursPerDay');
     if(s.focusMode) document.getElementById('focusMode').value=s.focusMode;
@@ -1046,7 +1047,7 @@ function loadState(){
       focus:clampNum(m.focus,'focus'),
       disciplines:Array.isArray(m.disciplines)?m.disciplines.map(d=>({
         name:String(d.name||'').slice(0,50),
-        pct:Math.min(100,Math.max(0,parseFloat(d.pct)||0))
+        pct:clampNum(d.pct,'discPct')
       })):[]
     }));
     if(Array.isArray(s.holidays)) holidays=s.holidays.map(h=>({

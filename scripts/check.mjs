@@ -22,7 +22,8 @@ ok(fn(html) === fn(test), 'computeCapacity identisch in index.html und test.html
 const clamp = new Function(grab(html, /const LIMITS=[^\n]*\n/, 'LIMITS') + grab(html, /function clampNum[^\n]*\n/, 'clampNum') + '; return clampNum;')();
 ok(clamp('0', 'focus') === 10 && clamp('', 'focus') === 70 && clamp('abc', 'employment') === 100 &&
    clamp('999', 'absence') === 60 && clamp('-5', 'absence') === 0 && clamp('0', 'sprintScope') === 10 &&
-   clamp('99', 'holidayDays') === 14, 'clampNum Grenzen/Defaults');
+   clamp('99', 'holidayDays') === 14 &&
+   clamp('0', 'sprintWeeks') === 1 && clamp('20', 'sprintWeeks') === 8 && clamp('', 'sprintDays') === 10 && clamp('150', 'discPct') === 100, 'clampNum Grenzen/Defaults');
 
 // 4) Export: Spaltenzahl und |-Escape
 const bm = grab(html, /function buildMarkdown\(\)\{[\s\S]*?\n\}\n/, 'buildMarkdown');
