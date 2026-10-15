@@ -365,7 +365,7 @@ const i18n = {
     "t-formula-s4":"④ Buffer / Fastlane","t-formula-s4-eq":"= Capacity × (100% − Story Budget%)",
     "t-dach-ref-title":"Public Holidays – next 3 months",
     "t-dach-loading":"Loading…","t-dach-error":"Could not load holidays.",
-    "t-dach-none":"No upcoming public holidays found.","t-dach-add":"+ Add",
+    "t-dach-none":"No upcoming public holidays found.","t-dach-partial":"{n} of {m} requests failed – list may be incomplete.","t-dach-add":"+ Add",
     "export-sprint-cap":"Sprint Capacity","export-budget-split":"Budget Split",
     "export-days":"Days","export-hours":"Hours","export-sprint-days":"Sprint Days",
     "export-holidays":"Holidays","export-story-budget":"User Story Budget",
@@ -416,7 +416,7 @@ const i18n = {
     "t-formula-s4":"④ Puffer / Fastlane","t-formula-s4-eq":"= Kapazität × (100% − Story-Budget%)",
     "t-dach-ref-title":"Feiertage – nächste 3 Monate",
     "t-dach-loading":"Wird geladen…","t-dach-error":"Feiertage konnten nicht geladen werden.",
-    "t-dach-none":"Keine bevorstehenden Feiertage gefunden.","t-dach-add":"+ Hinzuf.",
+    "t-dach-none":"Keine bevorstehenden Feiertage gefunden.","t-dach-partial":"{n} von {m} Abfragen fehlgeschlagen – Liste evtl. unvollständig.","t-dach-add":"+ Hinzuf.",
     "export-sprint-cap":"Sprint Kapazitäten","export-budget-split":"Budget-Aufteilung",
     "export-days":"Tage","export-hours":"Stunden","export-sprint-days":"Sprint-Tage",
     "export-holidays":"Feiertage","export-story-budget":"User-Story-Budget",
@@ -656,6 +656,41 @@ function addDachHoliday(name,days){
   saveState();
   showToast();
 }
+const HOL_TTL=7*24*3600*1000, HOL_TIMEOUT=8000, HOL_CONC=4;
+function holCacheGet(code,year,allowStale){
+  try{
+    const c=JSON.parse(localStorage.getItem('srp-hol-'+code+'-'+year));
+    if(!c||!Array.isArray(c.d)||typeof c.t!=='number') return null;
+    if(!allowStale&&Date.now()-c.t>HOL_TTL) return null;
+    return c.d.filter(h=>h&&/^\d{4}-\d{2}-\d{2}$/.test(h.date));
+  }catch(e){ return null; }
+}
+function holCacheSet(code,year,data){
+  try{ localStorage.setItem('srp-hol-'+code+'-'+year,JSON.stringify({t:Date.now(),d:data.slice(0,100).map(h=>({date:h.date,name:h.name,localName:h.localName}))})); }catch(e){}
+}
+async function fetchHol(code,year){
+  const hit=holCacheGet(code,year);
+  if(hit) return {code,data:hit,ok:true};
+  const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),HOL_TIMEOUT);
+  try{
+    const r=await fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code,{signal:ctrl.signal});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(!Array.isArray(d)) throw new Error('format');
+    holCacheSet(code,year,d);
+    return {code,data:d,ok:true};
+  }catch(e){
+    const old=holCacheGet(code,year,true);
+    return old?{code,data:old,ok:true,stale:true}:{code,data:[],ok:false};
+  }finally{ clearTimeout(tid); }
+}
+async function runPool(tasks,n){
+  const out=new Array(tasks.length); let i=0;
+  await Promise.all(Array.from({length:Math.min(n,tasks.length)},async()=>{
+    while(i<tasks.length){ const k=i++; out[k]=await tasks[k](); }
+  }));
+  return out;
+}
 async function loadDachHolidays(){
   if(_dachLoaded)return;
   _dachLoaded=true;
@@ -686,19 +721,15 @@ async function loadDachHolidays(){
   const years=[...new Set([now.getFullYear(),end.getFullYear()])];
   try{
     const grouped=Object.fromEntries(codes.map(c=>[c,[]]));
-    const ctrl=new AbortController();
-    const tid=setTimeout(()=>ctrl.abort(),10000);
-    const requests=codes.flatMap(code=>years.map(year=>
-      fetch('https://date.nager.at/api/v3/PublicHolidays/'+year+'/'+code,{signal:ctrl.signal})
-        .then(r=>r.ok?r.json().then(d=>({code,data:d})):null)
-        .catch(()=>null)
-    ));
-    const results=await Promise.allSettled(requests);
-    clearTimeout(tid);
+    const results=await runPool(codes.flatMap(code=>years.map(year=>()=>fetchHol(code,year))),HOL_CONC);
+    const failed=results.filter(r=>!r.ok).length;
+    if(failed===results.length){
+      _dachLoaded=false; // Retry beim naechsten Oeffnen/Sprachwechsel
+      content.innerHTML='<span style="font-size:.75rem;color:#ef4444;">'+t('t-dach-error')+'</span>';
+      return;
+    }
     results.forEach(r=>{
-      if(r.status!=='fulfilled'||!r.value)return;
-      const{code,data}=r.value;
-      if(!Array.isArray(data))return;
+      const{code,data}=r;
       const seen=new Set(grouped[code].map(x=>x.date));
       data.slice(0,100).forEach(h=>{
         if(seen.has(h.date))return;
@@ -707,9 +738,10 @@ async function loadDachHolidays(){
       });
     });
     const hasAny=codes.some(c=>grouped[c].length>0);
-    if(!hasAny){content.innerHTML='<span style="font-size:.75rem;color:var(--text-4);">'+t('t-dach-none')+'</span>';return;}
+    const warn=failed?'<div style="font-size:.7rem;color:#b45309;margin-bottom:.4rem;">'+escHtml(t('t-dach-partial').replace('{n}',failed).replace('{m}',results.length))+'</div>':'';
+    if(!hasAny){content.innerHTML=warn+'<span style="font-size:.75rem;color:var(--text-4);">'+t('t-dach-none')+'</span>';return;}
     const clangs=cnames[lang]||cnames.en;
-    content.innerHTML=codes.map(c=>{
+    content.innerHTML=warn+codes.map(c=>{
       const hols=grouped[c]; if(!hols.length)return'';
       const rows=hols.map(h=>{
         const d=new Date(h.date+'T00:00:00');
