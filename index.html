@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <script>(function(){var t;try{t=localStorage.getItem('srp-theme');}catch(e){}if(t!=='dark'&&t!=='light')t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);})();</script>
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https://date.nager.at; img-src 'self' data:; font-src 'self';">
   <title>Sprint Resource Planner</title>
   <style>
@@ -18,12 +20,29 @@
       --text-1:    #111827;
       --text-2:    #374151;
       --text-3:    #6b7280;
-      --text-4:    #9ca3af;
+      --text-4:    #636b77;
       --text-head: #4338ca;
-      --accent:    #6366f1;
-      --accent-h:  #4f46e5;
+      --accent:    #4f46e5;
+      --accent-h:  #4338ca;
       --accent-lt: #eef2ff;
+      --on-accent: #ffffff;
+      --focus:     #4f46e5;
+      --ok:        #15803d;
+      --ok-strong: #166534;
+      --ok-bg:     #f0fdf4;
+      --ok-tint:   rgba(34,197,94,.08);
+      --info:        #1d4ed8;
+      --info-strong: #1e40af;
+      --warn:        #b45309;
+      --warn-strong: #c2410c;
+      --warn-bg:     #fff7ed;
+      --ok-solid:    #15803d;
+      --warn-solid:  #c2410c;
+      --on-solid:    #ffffff;
+      --danger:      #b91c1c;
+      --danger-bg:   #fef2f2;
       --shadow:    rgba(0,0,0,.06);
+      color-scheme: light;
     }
     [data-theme="dark"] {
       --bg:        #0f172a;
@@ -36,12 +55,29 @@
       --text-1:    #f1f5f9;
       --text-2:    #cbd5e1;
       --text-3:    #94a3b8;
-      --text-4:    #64748b;
+      --text-4:    #8b9ab0;
       --text-head: #818cf8;
       --accent:    #818cf8;
-      --accent-h:  #6366f1;
+      --accent-h:  #a5b4fc;
       --accent-lt: #1e2a4a;
+      --on-accent: #0f172a;
+      --focus:     #a5b4fc;
+      --ok:        #4ade80;
+      --ok-strong: #86efac;
+      --ok-bg:     #052e16;
+      --ok-tint:   rgba(34,197,94,.08);
+      --info:        #60a5fa;
+      --info-strong: #93c5fd;
+      --warn:        #fbbf24;
+      --warn-strong: #fb923c;
+      --warn-bg:     #2d1a00;
+      --ok-solid:    #15803d;
+      --warn-solid:  #c2410c;
+      --on-solid:    #ffffff;
+      --danger:      #f87171;
+      --danger-bg:   #2d1515;
       --shadow:    rgba(0,0,0,.35);
+      color-scheme: dark;
     }
     *, *::before, *::after { box-sizing: border-box; }
     body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--text-2); min-height: 100vh; padding: 2rem 1rem; transition: background .2s, color .2s; }
@@ -49,14 +85,13 @@
     input[type="number"], input[type="text"], select { border: 1px solid var(--border); border-radius: .5rem; padding: .375rem .75rem; font-size: .875rem; width: 100%; background: var(--bg-input); color: var(--text-2); outline: none; transition: box-shadow .15s, background .2s, color .2s; appearance: none; -webkit-appearance: none; }
     select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .65rem center; padding: .375rem 2rem .375rem .75rem !important; }
     [data-theme="dark"] select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); }
-    input:focus, select:focus { box-shadow: 0 0 0 2px #a5b4fc; border-color: #a5b4fc; }
+    input:focus, select:focus { box-shadow: 0 0 0 2px var(--focus); border-color: var(--focus); }
     input[readonly] { background: var(--bg-alt) !important; color: var(--text-3) !important; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #fff; font-weight: 500; padding: .5rem 1rem; border-radius: .5rem; font-size: .875rem; border: none; cursor: pointer; transition: background .15s; }
+    .btn-primary { background: var(--accent); color: var(--on-accent); font-weight: 500; padding: .5rem 1rem; border-radius: .5rem; font-size: .875rem; border: none; cursor: pointer; transition: background .15s; }
     .btn-primary:hover { background: var(--accent-h); }
     .btn-secondary { background: var(--bg-alt); color: var(--text-2); font-weight: 500; padding: .5rem 1rem; border-radius: .5rem; font-size: .875rem; border: 1px solid var(--border); cursor: pointer; transition: filter .15s; }
     .btn-secondary:hover { filter: brightness(.93); }
-    .btn-danger { background: #fef2f2; color: #ef4444; font-weight: 500; padding: .375rem .75rem; border-radius: .5rem; font-size: .75rem; border: none; cursor: pointer; }
-    [data-theme="dark"] .btn-danger { background: #2d1515; color: #f87171; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); font-weight: 500; padding: .375rem .75rem; border-radius: .5rem; font-size: .75rem; border: none; cursor: pointer; }
     .btn-outline { border: 1px solid var(--accent); color: var(--accent); font-weight: 500; padding: .375rem .75rem; border-radius: .5rem; font-size: .875rem; background: transparent; cursor: pointer; }
     .btn-outline:hover { background: var(--accent-lt); }
     .theme-toggle { width: 2.25rem; height: 2.25rem; border-radius: .5rem; border: 1px solid var(--border); background: var(--bg-alt); color: var(--text-3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
@@ -66,8 +101,12 @@
     [data-theme="dark"] .holiday-tag { background: #2d1f00; color: #fbbf24; }
     .result-row:nth-child(even) { background: var(--bg-alt); }
     .copy-cell { cursor: pointer; user-select: none; position: relative; transition: background .12s; }
-    .copy-cell:hover { background: var(--accent-lt) !important; border-radius: 4px; }
-    .copy-cell:hover::after { content: attr(data-tip); font-size: .6rem; position: absolute; top: 2px; right: 4px; opacity: .45; }
+    .copy-cell:focus-visible { background: var(--accent-lt) !important; }
+    .copy-cell:focus-visible::after { content: attr(data-tip); font-size: .6rem; position: absolute; top: 2px; right: 4px; opacity: .7; }
+    @media (hover: hover) {
+      .copy-cell:hover { background: var(--accent-lt) !important; border-radius: 4px; }
+      .copy-cell:hover::after { content: attr(data-tip); font-size: .6rem; position: absolute; top: 2px; right: 4px; opacity: .7; }
+    }
     .sec-title { color: var(--text-1); font-weight: 600; }
     .lbl { font-size: .75rem; color: var(--text-3); display: block; margin-bottom: .25rem; }
     .member-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; background: var(--bg-member); border-radius: .75rem; padding: .75rem; border: 1px solid var(--border); }
@@ -87,8 +126,11 @@
     tfoot tr td { background: var(--bg-thead); color: var(--text-head); border-top: 2px solid var(--border); border-bottom: none; }
     .max-w-5xl { max-width: 64rem; }
     .mx-auto { margin-left: auto; margin-right: auto; }
-    .copy-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .copy-cell:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    }
     button.lang-opt { background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
   </style>
 </head>
@@ -96,7 +138,7 @@
 <div class="max-w-5xl mx-auto" style="display:flex;flex-direction:column;gap:1.5rem;">
 
   <!-- Header -->
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+  <header style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
     <div>
       <h1 class="sec-title" style="font-size:1.5rem;" id="t-title">Sprint Resource Planner</h1>
       <p class="lbl" style="margin-top:.25rem;" id="t-subtitle">Plan your team capacity for Sprint Planning 1</p>
@@ -118,8 +160,9 @@
         <svg id="icon-moon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
       </button>
     </div>
-  </div>
+  </header>
 
+  <main style="display:flex;flex-direction:column;gap:1.5rem;">
   <!-- Sprint Settings -->
   <div class="card fade-in">
     <h2 class="sec-title" style="font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
@@ -204,7 +247,7 @@
   <div id="results-section" style="display:none;" class="card fade-in">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem;">
       <h2 class="sec-title" style="font-size:1rem;display:flex;align-items:center;gap:.5rem;">
-        <svg width="16" height="16" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <svg width="16" height="16" fill="none" stroke="var(--ok)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         <span id="t-results">Results</span>
         <span class="tag" id="result-sprint-name"></span>
       </h2>
@@ -218,17 +261,17 @@
       <table style="width:100%;font-size:.875rem;">
         <thead>
           <tr>
-            <th style="text-align:left;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-name">Name</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-employ">Empl.(%)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-alloc">Alloc.(%)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-absence">Absence(d)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-holidays">Holidays(d)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-available">Avail.(d)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-focus">Focus(%)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-cap-days">Cap.(d)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-cap-hours">Cap.(h)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;background:rgba(34,197,94,.08);" id="t-col-scope-days">Story(d)</th>
-            <th style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;background:rgba(34,197,94,.08);" id="t-col-scope-hours">Story(h)</th>
+            <th scope="col" style="text-align:left;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-name">Name</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-employ">Empl.(%)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-alloc">Alloc.(%)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-absence">Absence(d)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-holidays">Holidays(d)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-available">Avail.(d)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-focus">Focus(%)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-cap-days">Cap.(d)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;" id="t-col-cap-hours">Cap.(h)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;background:var(--ok-tint);" id="t-col-scope-days">Story(d)</th>
+            <th scope="col" style="text-align:right;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;background:var(--ok-tint);" id="t-col-scope-hours">Story(h)</th>
           </tr>
         </thead>
         <tbody id="results-body"></tbody>
@@ -258,11 +301,11 @@
             <div><div style="font-size:.8rem;font-weight:600;color:var(--text-2);" id="t-formula-s2"></div><div style="font-size:.78rem;color:var(--text-3);margin-top:.1rem;font-family:ui-monospace,monospace;" id="t-formula-s2-eq"></div></div>
           </div>
           <div style="display:flex;align-items:flex-start;gap:.65rem;">
-            <span style="background:rgba(34,197,94,.13);color:#16a34a;font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">3</span>
+            <span style="background:rgba(34,197,94,.13);color:var(--ok-strong);font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">3</span>
             <div><div style="font-size:.8rem;font-weight:600;color:var(--text-2);" id="t-formula-s3"></div><div style="font-size:.78rem;color:var(--text-3);margin-top:.1rem;font-family:ui-monospace,monospace;" id="t-formula-s3-eq"></div></div>
           </div>
           <div style="display:flex;align-items:flex-start;gap:.65rem;">
-            <span style="background:rgba(249,115,22,.13);color:#c2410c;font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">4</span>
+            <span style="background:rgba(249,115,22,.13);color:var(--warn-strong);font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:.3rem;white-space:nowrap;margin-top:.1rem;">4</span>
             <div><div style="font-size:.8rem;font-weight:600;color:var(--text-2);" id="t-formula-s4"></div><div style="font-size:.78rem;color:var(--text-3);margin-top:.1rem;font-family:ui-monospace,monospace;" id="t-formula-s4-eq"></div></div>
           </div>
         </div>
@@ -277,22 +320,22 @@
       </h3>
       <!-- Progress bar -->
       <div style="display:flex;border-radius:.5rem;overflow:hidden;height:1.75rem;margin-bottom:.75rem;">
-        <div id="split-bar-us" style="background:#22c55e;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff;transition:width .4s ease;"></div>
-        <div id="split-bar-buffer" style="background:#f97316;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:#fff;transition:width .4s ease;"></div>
+        <div id="split-bar-us" style="background:var(--ok-solid);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:var(--on-solid);transition:width .4s ease;"></div>
+        <div id="split-bar-buffer" style="background:var(--warn-solid);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:var(--on-solid);transition:width .4s ease;"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
         <div style="border-radius:.75rem;border:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;">
-          <div style="width:.75rem;height:2.5rem;border-radius:.25rem;background:#22c55e;flex-shrink:0;"></div>
+          <div style="width:.75rem;height:2.5rem;border-radius:.25rem;background:var(--ok-solid);flex-shrink:0;"></div>
           <div>
             <div class="lbl" style="margin:0;" id="split-us-label">User Stories / Planned</div>
-            <div class="copy-cell" style="font-size:1.1rem;font-weight:700;color:#16a34a;" id="split-us-val" onclick="copySingle(document.getElementById('split-us-val').textContent)"></div>
+            <div class="copy-cell" style="font-size:1.1rem;font-weight:700;color:var(--ok);" id="split-us-val" onclick="copySingle(document.getElementById('split-us-val').textContent)"></div>
           </div>
         </div>
         <div style="border-radius:.75rem;border:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;">
-          <div style="width:.75rem;height:2.5rem;border-radius:.25rem;background:#f97316;flex-shrink:0;"></div>
+          <div style="width:.75rem;height:2.5rem;border-radius:.25rem;background:var(--warn-solid);flex-shrink:0;"></div>
           <div>
             <div class="lbl" style="margin:0;" id="split-buffer-label">Fastlane / Buffer</div>
-            <div class="copy-cell" style="font-size:1.1rem;font-weight:700;color:#c2410c;" id="split-buffer-val" onclick="copySingle(document.getElementById('split-buffer-val').textContent)"></div>
+            <div class="copy-cell" style="font-size:1.1rem;font-weight:700;color:var(--warn-strong);" id="split-buffer-val" onclick="copySingle(document.getElementById('split-buffer-val').textContent)"></div>
           </div>
         </div>
       </div>
@@ -306,14 +349,15 @@
       <div id="disc-table-wrap"></div>
     </div>
   </div>
+  </main>
 
-  <p style="text-align:center;font-size:.75rem;color:var(--text-4);padding-bottom:1rem;line-height:1.8;">
+  <footer style="text-align:center;font-size:.75rem;color:var(--text-4);padding-bottom:1rem;line-height:1.8;">
     Sprint Resource Planner &middot;
     MIT License &middot;
     Made by <a href="https://studer.rocks" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;color:var(--accent);">studer.rocks</a>
     &middot;
     <a href="https://github.com/messiahfst/SprintRessources" target="_blank" rel="noopener noreferrer" style="text-decoration:underline;color:var(--accent);" id="t-github-link">GitHub</a>
-  </p>
+  </footer>
 </div>
 
 <!-- Toast -->
@@ -768,8 +812,7 @@ function toggleTheme(){
   if(tb)tb.setAttribute('aria-label',next==='dark'?'Switch to light mode':'Switch to dark mode');
 }
 function applyTheme(){
-  const s=localStorage.getItem('srp-theme')||'light';
-  document.documentElement.setAttribute('data-theme',s);
+  const s=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
   document.getElementById('icon-sun').style.display=s==='dark'?'block':'none';
   document.getElementById('icon-moon').style.display=s==='dark'?'none':'block';
 }
@@ -897,41 +940,40 @@ function calculate(){
   const{rows,totalDays,totalHours,usDays,usHours,bufferDays,bufferHours,scopePct,discEntries,sprintDays,totalHolidays,sprintName}=result;
   const sprintScope=settings.sprintScope;
   document.getElementById('result-sprint-name').textContent=sprintName;
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   const cardDefs=[
-    {label:t('summary-sprint-days'),value:sprintDays,unit:t('summary-unit-days'),bg:isDark?'#1e2a4a':'#eef2ff',fg:'#4338ca'},
-    {label:t('summary-total-cap-days'),value:totalDays,unit:t('summary-unit-days'),bg:isDark?'#052e16':'#f0fdf4',fg:'#16a34a'},
-    {label:t('summary-us-days'),value:usDays,unit:t('summary-unit-days'),bg:isDark?'#1a2d1a':'#f0fdf4',fg:'#15803d'},
-    {label:t('summary-buffer-days'),value:bufferDays,unit:t('summary-unit-days'),bg:isDark?'#2d1a00':'#fff7ed',fg:'#c2410c'}
+    {label:t('summary-sprint-days'),value:sprintDays,unit:t('summary-unit-days'),bg:'var(--accent-lt)',fg:'var(--text-head)'},
+    {label:t('summary-total-cap-days'),value:totalDays,unit:t('summary-unit-days'),bg:'var(--ok-bg)',fg:'var(--ok)'},
+    {label:t('summary-us-days'),value:usDays,unit:t('summary-unit-days'),bg:'var(--ok-bg)',fg:'var(--ok)'},
+    {label:t('summary-buffer-days'),value:bufferDays,unit:t('summary-unit-days'),bg:'var(--warn-bg)',fg:'var(--warn-strong)'}
   ];
   document.getElementById('summary-cards').innerHTML=cardDefs.map(c=>`<div style="border-radius:.75rem;background:${c.bg};border:1px solid var(--border);padding:1rem;text-align:center;"><div style="font-size:1.75rem;font-weight:700;color:${c.fg};">${c.value}</div><div style="font-size:.7rem;color:${c.fg};margin-top:.2rem;">${c.unit}</div><div style="font-size:.75rem;color:var(--text-3);margin-top:.15rem;">${c.label}</div></div>`).join('');
   document.getElementById('results-body').innerHTML=rows.map(r=>`
     <tr class="result-row">
-      <td style="padding:.6rem 1rem;font-weight:500;color:var(--text-1);">${escHtml(r.name)}</td>
+      <th scope="row" style="padding:.6rem 1rem;font-weight:500;color:var(--text-1);text-align:left;">${escHtml(r.name)}</th>
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--text-3);" onclick="copySingle('${r.employment}')">${r.employment}</td>
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--text-3);" onclick="copySingle('${r.allocation}')">${r.allocation}</td>
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--text-3);" onclick="copySingle('${r.absence}')">${r.absence}</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#d97706;" onclick="copySingle('${r.holidays}')">${r.holidays}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--warn);" onclick="copySingle('${r.holidays}')">${r.holidays}</td>
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--accent);font-weight:500;" onclick="copySingle('${r.available}')">${r.available}</td>
       <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--text-3);" onclick="copySingle('${r.focus}')">${r.focus}%</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#16a34a;font-weight:600;" onclick="copySingle('${r.capDays}')">${r.capDays}</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#1d4ed8;font-weight:600;" onclick="copySingle('${r.capHours}')">${r.capHours}</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#15803d;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${r.scopeDays}')">${r.scopeDays}</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:#1e40af;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${r.scopeHours}')">${r.scopeHours}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--ok);font-weight:600;" onclick="copySingle('${r.capDays}')">${r.capDays}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--info);font-weight:600;" onclick="copySingle('${r.capHours}')">${r.capHours}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--ok-strong);font-weight:700;background:var(--ok-tint);" onclick="copySingle('${r.scopeDays}')">${r.scopeDays}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.6rem 1rem;text-align:right;color:var(--info-strong);font-weight:700;background:var(--ok-tint);" onclick="copySingle('${r.scopeHours}')">${r.scopeHours}</td>
     </tr>`).join('');
   document.getElementById('results-foot').innerHTML=`
     <tr>
-      <td style="padding:.7rem 1rem;font-weight:700;">&#8721; ${t('total')}</td>
+      <th scope="row" style="padding:.7rem 1rem;font-weight:700;text-align:left;">&#8721; ${t('total')}</th>
       <td style="padding:.7rem 1rem;text-align:right;color:var(--text-4);">&#8212;</td>
       <td style="padding:.7rem 1rem;text-align:right;color:var(--text-4);">&#8212;</td>
       <td style="padding:.7rem 1rem;text-align:right;color:var(--text-4);">&#8212;</td>
       <td style="padding:.7rem 1rem;text-align:right;color:var(--text-4);">&#8212;</td>
       <td style="padding:.7rem 1rem;text-align:right;color:var(--text-4);">&#8212;</td>
       <td style="padding:.7rem 1rem;text-align:right;color:var(--text-4);">&#8212;</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#16a34a;font-weight:700;" onclick="copySingle('${totalDays}')">${totalDays}</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#1d4ed8;font-weight:700;" onclick="copySingle('${totalHours}')">${totalHours}</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#15803d;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${usDays}')">${usDays}</td>
-      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:#1e40af;font-weight:700;background:rgba(34,197,94,.06);" onclick="copySingle('${usHours}')">${usHours}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:var(--ok-strong);font-weight:700;" onclick="copySingle('${totalDays}')">${totalDays}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:var(--info);font-weight:700;" onclick="copySingle('${totalHours}')">${totalHours}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:var(--ok-strong);font-weight:700;background:var(--ok-tint);" onclick="copySingle('${usDays}')">${usDays}</td>
+      <td class="copy-cell" data-tip="copy" style="padding:.7rem 1rem;text-align:right;color:var(--info-strong);font-weight:700;background:var(--ok-tint);" onclick="copySingle('${usHours}')">${usHours}</td>
     </tr>`;
   document.getElementById('result-formula-hint').textContent=t('formula-hint');
   const barW=Math.round(sprintScope*100);
@@ -944,7 +986,7 @@ function calculate(){
   document.getElementById('split-bar-us').style.width=barW+'%';
   document.getElementById('split-bar-buffer').style.width=(100-barW)+'%';
   document.getElementById('results-section').style.display='';
-  document.getElementById('results-section').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('results-section').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
   if(discEntries.length){
     document.getElementById('discipline-section').style.display='';
     document.getElementById('disc-section-title').textContent=t('t-disc-title');
