@@ -961,7 +961,7 @@ function calculate(){
 function copySingle(v){ copyToClipboard(String(v)); }
 function buildMarkdown(){
   const r=_lastResult; if(!r) return '';
-  const cols=[t('t-col-name'),t('t-col-employ'),t('t-col-alloc'),t('t-col-absence'),t('t-col-holidays'),t('t-col-available'),t('t-col-focus'),t('t-col-cap-days'),t('t-col-cap-hours')];
+  const cols=[t('t-col-name'),t('t-col-employ'),t('t-col-alloc'),t('t-col-absence'),t('t-col-holidays'),t('t-col-available'),t('t-col-focus'),t('t-col-cap-days'),t('t-col-cap-hours'),t('t-col-scope-days'),t('t-col-scope-hours')];
   let md='## '+t('export-sprint-cap')+': '+r.sprintName+'\n\n';
   md+='| '+cols.join(' | ')+' |\n';
   md+='|'+cols.map(()=>'---').join('|')+'|\n';
