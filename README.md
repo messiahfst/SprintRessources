@@ -56,7 +56,15 @@ The formula is shown inline in the app via the collapsible **"How the Formula Wo
 
 ## Changelog
 
-### v1.5.0 — 2026-04-03
+### [v1.5.1](https://github.com/messiahfst/SprintRessources/releases/tag/v1.5.1) — 2026-11-09
+
+**Bug fix: Markdown-Export**
+- Tabellenkopf von „Als Markdown kopieren“ enthielt nur 9 statt 11 Spalten – `Story(d)` / `Story(h)` fehlten, obwohl Daten- und Total-Zeilen 11 Zellen hatten
+- Beitrag von [@thomasender](https://github.com/thomasender) ([#4](https://github.com/messiahfst/SprintRessources/pull/4))
+
+---
+
+### [v1.5.0](https://github.com/messiahfst/SprintRessources/releases/tag/v1.5.0) — 2026-04-03
 
 **Holiday Reference: Language-based European Country Filtering**
 - Bug fix: `now` variable was undefined in `loadDachHolidays()` → ReferenceError → holidays never loaded
